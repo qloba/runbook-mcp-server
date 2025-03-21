@@ -1,0 +1,46 @@
+{
+  "name": "@runbook-docs/mcp-server",
+  "version": "1.0.0",
+  "description": "Runbook Model Context Protocol Server",
+  "bin": {
+    "runbook-mcp-server": "dist/index.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && chmod +x dist/*.js",
+    "prepublishOnly": "npm run build",
+    "watch": "tsc --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qloba/runbook-mcp-server.git"
+  },
+  "keywords": [
+    "Runbook",
+    "MCP",
+    "Claude"
+  ],
+  "author": "qloba, inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qloba/runbook-mcp-server/issues"
+  },
+  "homepage": "https://github.com/qloba/runbook-mcp-server#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "@runbook-docs/client": "^1.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/node": "^22.13.10",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1"
+  }
+}
