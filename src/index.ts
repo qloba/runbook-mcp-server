@@ -84,7 +84,8 @@ You have to retrieve the full content by calling \`get-article\`.
   },
   async ({ bookUid }) => {
     const data: GetArticlesQuery = await runbook.query('getArticles', {
-      bookUid
+      bookUid,
+      first: 50
     });
     const summaries = data.node.articles.nodes.map((article) => {
       return {
