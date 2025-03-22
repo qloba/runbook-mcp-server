@@ -71,7 +71,7 @@ server.tool(
 
 server.tool(
   'list-articles',
-  `List all articles in a specified book with ID.
+  `List top 50 articles in a specified book with ID.
 The result does not include entire article bodies as they are truncated in 200 characters.
 You have to retrieve the full content by calling \`get-article\`.
 `,
@@ -85,7 +85,7 @@ You have to retrieve the full content by calling \`get-article\`.
       .string()
       .optional()
       .describe(
-        `Search query. If provided, the article name of result will be filtered by the query.`
+        `Search query. If provided, the result will be filtered by article name.`
       ),
     categoryUid: z
       .string()
@@ -122,18 +122,18 @@ You have to retrieve the full content by calling \`get-article\`.
 
 server.tool(
   'list-books',
-  `Retrieve a list of all books`,
+  `List top 100 books in the organization`,
   {
     q: z
       .string()
       .describe(
-        `Search query. If provided, the result will be filtered by the query.`
+        `Search query. If provided, the result will be filtered by book name.`
       )
   },
   async ({ q }) => {
     const data: GetBooksQuery = await runbook.query('getBooks', {
       q: q,
-      first: 50
+      first: 100
     });
     return {
       content: [
@@ -148,8 +148,7 @@ server.tool(
 
 server.tool(
   'list-categories',
-  `List all categories in a specified book with ID.
-`,
+  `List top 100 categories in a specified book with ID`,
   {
     bookUid: z
       .string()
@@ -160,7 +159,7 @@ server.tool(
   async ({ bookUid }) => {
     const data: GetCategoriesQuery = await runbook.query('getCategories', {
       bookUid,
-      first: 50
+      first: 100
     });
     const categories = data.node.categories.nodes;
     return {

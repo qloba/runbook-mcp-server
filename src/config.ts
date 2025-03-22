@@ -57,8 +57,12 @@ function setConfigFile() {
 function setEnvironmentVariables() {
   const envVars = ['BASE_URL', 'API_TOKEN'];
   for (const envVar of envVars) {
-    if (process.env[envVar]) {
-      config = { ...config, [upperSnakeToCamel(envVar)]: process.env[envVar]! };
+    const envName = `RUNBOOK_${envVar}`;
+    if (process.env[envName]) {
+      config = {
+        ...config,
+        [upperSnakeToCamel(envVar)]: process.env[envName]!
+      };
     }
   }
 }
