@@ -62,7 +62,7 @@ server.tool(
       content: [
         {
           type: 'text',
-          text: data.node.bodyText
+          text: JSON.stringify(data.node, null, 2)
         }
       ]
     };
@@ -80,11 +80,27 @@ You have to retrieve the full content by calling \`get-article\`.
       .string()
       .describe(
         `ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`list-books\``
-      )
+      ),
+    q: z
+      .string()
+      .optional()
+      .describe(
+        `Search query. If provided, the article name of result will be filtered by the query.`
+      ),
+    categoryUid: z
+      .string()
+      .optional()
+      .describe(
+        `ID of the category. It always starts with 'ca_'. You can retrieve a list of categories with \`list-categories\``
+      ),
+    orderBy: z
+      .enum(['updatedAt', 'createdAt', 'name', 'popularity'])
+      .optional()
+      .describe(`Sort the articles by the specified field`)
   },
-  async ({ bookUid }) => {
+  async (props) => {
     const data: GetArticlesQuery = await runbook.query('getArticles', {
-      bookUid,
+      ...props,
       first: 50
     });
     const summaries = data.node.articles.nodes.map((article) => {
@@ -115,7 +131,10 @@ server.tool(
       )
   },
   async ({ q }) => {
-    const data: GetBooksQuery = await runbook.query('getBooks', { q: q });
+    const data: GetBooksQuery = await runbook.query('getBooks', {
+      q: q,
+      first: 50
+    });
     return {
       content: [
         {
@@ -140,7 +159,8 @@ server.tool(
   },
   async ({ bookUid }) => {
     const data: GetCategoriesQuery = await runbook.query('getCategories', {
-      bookUid
+      bookUid,
+      first: 50
     });
     const categories = data.node.categories.nodes;
     return {
@@ -164,7 +184,7 @@ server.tool(
       .optional()
       .default('all')
       .describe(
-        `ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`list-books\``
+        `ID of the book or workspace. You can retrieve a list of books with \`list-books\``
       ),
     keywords: z
       .string()
@@ -174,7 +194,7 @@ server.tool(
     orderBy: z
       .enum(['updatedAt', 'createdAt', 'score'])
       .optional()
-      .default('createdAt')
+      .default('score')
       .describe(`Sort the articles by the specified field`)
   },
   async (params) => {
