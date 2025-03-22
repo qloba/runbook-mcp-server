@@ -187,7 +187,9 @@ server.tool(
       ),
     keywords: z
       .string()
-      .describe(`Space-separated keywords to filter articles`),
+      .describe(
+        `Space-separated keywords to filter articles. If multiple keywords are provided, the articles that match all of them will be returned.`
+      ),
     limit: z.number().optional().describe(`Number of articles to retrieve`),
     offset: z.number().optional().describe(`Offset of the search result`),
     orderBy: z
