@@ -11,7 +11,7 @@ This MCP server integrates with [Runbook](https://www.runbook.jp) to allow listi
   - Required inputs:
     - `articleUid` (string): ID of the article to retrieve. It always starts with `ar_`.
 - **`list-articles`**
-  - List top 50 articles in a specified book with ID.
+  - List top 100 articles in a specified book with ID.
   - Required inputs:
     - `bookUid` (string): ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`list-books\`.
   - Optional inputs:
