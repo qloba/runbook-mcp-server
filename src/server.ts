@@ -38,7 +38,14 @@ server.resource(
       contents: [
         {
           uri: uri.href,
-          text: data.node.bodyText,
+          text: JSON.stringify(
+            {
+              ...data.node,
+              url: `${config.baseUrl}/articles/${articleUid}`
+            },
+            null,
+            2
+          ),
           mimeType: 'application/json'
         }
       ]
@@ -62,7 +69,14 @@ server.tool(
       content: [
         {
           type: 'text',
-          text: JSON.stringify(data.node, null, 2)
+          text: JSON.stringify(
+            {
+              ...data.node,
+              url: `${config.baseUrl}/articles/${articleUid}`
+            },
+            null,
+            2
+          )
         }
       ]
     };
@@ -71,7 +85,7 @@ server.tool(
 
 server.tool(
   'list-articles',
-  `List top 50 articles in a specified book with ID.
+  `List top 100 articles in a specified book with ID.
 The result does not include entire article bodies as they are truncated in 200 characters.
 You have to retrieve the full content by calling \`get-article\`.
 `,
@@ -101,19 +115,13 @@ You have to retrieve the full content by calling \`get-article\`.
   async (props) => {
     const data: GetArticlesQuery = await runbook.query('getArticles', {
       ...props,
-      first: 50
-    });
-    const summaries = data.node.articles.nodes.map((article) => {
-      return {
-        ...article,
-        body: article.bodyText.substring(0, 200)
-      };
+      first: 100
     });
     return {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(summaries, null, 2)
+          text: JSON.stringify(data.node.articles.nodes, null, 2)
         }
       ]
     };
