@@ -208,7 +208,10 @@ server.tool(
   },
   async (params) => {
     const data: searchQuery = await runbook.query('search', params);
-    const searchResults = data.searchResults.nodes;
+    const searchResults = data.searchResults.nodes.map((article) => ({
+      ...article,
+      url: `${config.baseUrl}${article.url}`
+    }));
     return {
       content: [
         {
