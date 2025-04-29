@@ -1,6 +1,6 @@
 {
   "name": "@runbook-docs/mcp-server",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Runbook Model Context Protocol Server",
   "bin": {
     "runbook-mcp-server": "dist/index.js"
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/qloba/runbook-mcp-server#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
-    "@runbook-docs/client": "^1.0.3"
+    "@runbook-docs/client": "^1.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

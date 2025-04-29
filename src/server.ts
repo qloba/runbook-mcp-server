@@ -14,6 +14,7 @@ import {
   GetCategoriesQuery,
   searchQuery
 } from '@runbook-docs/client/dist/queries/types';
+import getArticleQuery from './queries/getArticle';
 import config from './config';
 
 const server = new McpServer({
@@ -62,8 +63,11 @@ server.tool(
       .describe('ID of the article to retrieve. It always starts with `ar_`.')
   },
   async ({ articleUid }) => {
-    const data: GetArticleQuery = await runbook.query('getArticle', {
-      articleUid
+    const data: GetArticleQuery = await runbook.graphql({
+      query: getArticleQuery,
+      variables: {
+        articleUid
+      }
     });
     return {
       content: [
@@ -183,8 +187,7 @@ server.tool(
 
 server.tool(
   'search-articles',
-  `Search articles by a query string.
-`,
+  `Search articles by a query string.`,
   {
     scope: z
       .string()
@@ -196,7 +199,7 @@ server.tool(
     keywords: z
       .string()
       .describe(
-        `Space-separated keywords to filter articles. If multiple keywords are provided, the articles that match all of them will be returned.`
+        `Space-separated keywords to filter articles. If multiple keywords are provided, the articles that match all of them will be returned. Use current language for keywords`
       ),
     limit: z.number().optional().describe(`Number of articles to retrieve`),
     offset: z.number().optional().describe(`Offset of the search result`),
