@@ -5,6 +5,8 @@ import * as path from 'path';
 interface Config {
   baseUrl: string;
   apiToken: string;
+  prefix?: string;
+  description?: string;
 }
 
 let config: Config = {
@@ -55,7 +57,7 @@ function setConfigFile() {
 }
 
 function setEnvironmentVariables() {
-  const envVars = ['BASE_URL', 'API_TOKEN'];
+  const envVars = ['BASE_URL', 'API_TOKEN', 'PREFIX', 'DESCRIPTION'];
   for (const envVar of envVars) {
     const envName = `RUNBOOK_${envVar}`;
     if (process.env[envName]) {
@@ -80,6 +82,16 @@ function setCommandlineArguments() {
       'base-url': {
         type: 'string',
         short: 'h',
+        multiple: false
+      },
+      prefix: {
+        type: 'string',
+        short: 'p',
+        multiple: false
+      },
+      description: {
+        type: 'string',
+        short: 'd',
         multiple: false
       }
     }
