@@ -79,7 +79,9 @@ async function buildServer() {
 
   server.tool(
     withPrefix('search-articles'),
-    `Search articles by a query string.`,
+    `Search for articles using keywords.
+The result does not include full article bodies as they are truncated to 200 characters.
+You will need to retrieve the full content by calling \`get-article\``,
     {
       scope: z
         .string()
@@ -154,8 +156,8 @@ async function buildServer() {
   server.tool(
     withPrefix('list-articles'),
     `List top 100 articles in a specified book with ID.
-The result does not include entire article bodies as they are truncated in 200 characters.
-You have to retrieve the full content by calling \`get-article\`.
+The result does not include full article bodies as they are truncated to 200 characters.
+You will need to retrieve the full content by calling \`get-article\`.
 `,
     {
       bookUid: z
