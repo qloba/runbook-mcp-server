@@ -32,7 +32,7 @@ async function buildServer() {
   const server = new McpServer(
     {
       name: serverName(),
-      version: '1.0.5'
+      version: '1.0.6'
     },
     {
       capabilities: {
@@ -71,6 +71,47 @@ async function buildServer() {
               2
             ),
             mimeType: 'application/json'
+          }
+        ]
+      };
+    }
+  );
+
+  server.tool(
+    withPrefix('search-articles'),
+    `Search articles by a query string.`,
+    {
+      scope: z
+        .string()
+        .optional()
+        .default('all')
+        .describe(
+          `ID of the book or workspace. If provided, the result will be filtered by them.`
+        ),
+      keywords: z
+        .string()
+        .describe(
+          `Space-separated keywords to filter articles. If multiple keywords are provided, the articles that match all of them will be returned. Use current language for keywords`
+        ),
+      limit: z.number().optional().describe(`Number of articles to retrieve`),
+      offset: z.number().optional().describe(`Offset of the search result`),
+      orderBy: z
+        .enum(['updatedAt', 'createdAt', 'score'])
+        .optional()
+        .default('score')
+        .describe(`Sort the articles by the specified field`)
+    },
+    async (params) => {
+      const data: searchQuery = await runbook.query('search', params);
+      const searchResults = data.searchResults.nodes.map((article) => ({
+        ...article,
+        url: `${config.baseUrl}${article.url}`
+      }));
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(searchResults, null, 2)
           }
         ]
       };
@@ -122,12 +163,10 @@ You have to retrieve the full content by calling \`get-article\`.
         .describe(
           `ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`list-books\``
         ),
-      q: z
+      articleName: z
         .string()
         .optional()
-        .describe(
-          `Search query. If provided, the result will be filtered by article name.`
-        ),
+        .describe(`If provided, the result will be filtered by article name.`),
       categoryUid: z
         .string()
         .optional()
@@ -141,7 +180,10 @@ You have to retrieve the full content by calling \`get-article\`.
     },
     async (props) => {
       const data: GetArticlesQuery = await runbook.query('getArticles', {
-        ...props,
+        bookUid: props.bookUid,
+        q: props.articleName,
+        categoryUid: props.categoryUid,
+        orderBy: props.orderBy,
         first: 100
       });
       return {
@@ -159,15 +201,14 @@ You have to retrieve the full content by calling \`get-article\`.
     withPrefix('list-books'),
     `List top 100 books in the organization`,
     {
-      q: z
+      bookName: z
         .string()
-        .describe(
-          `Search query. If provided, the result will be filtered by book name.`
-        )
+        .optional()
+        .describe(`If provided, the result will be filtered by book name.`)
     },
-    async ({ q }) => {
+    async ({ bookName }) => {
       const data: GetBooksQuery = await runbook.query('getBooks', {
-        q: q,
+        q: bookName,
         first: 100
       });
       return {
@@ -202,47 +243,6 @@ You have to retrieve the full content by calling \`get-article\`.
           {
             type: 'text',
             text: JSON.stringify(categories, null, 2)
-          }
-        ]
-      };
-    }
-  );
-
-  server.tool(
-    withPrefix('search-articles'),
-    `Search articles by a query string.`,
-    {
-      scope: z
-        .string()
-        .optional()
-        .default('all')
-        .describe(
-          `ID of the book or workspace. If provided, the result will be filtered by them.`
-        ),
-      keywords: z
-        .string()
-        .describe(
-          `Space-separated keywords to filter articles. If multiple keywords are provided, the articles that match all of them will be returned. Use current language for keywords`
-        ),
-      limit: z.number().optional().describe(`Number of articles to retrieve`),
-      offset: z.number().optional().describe(`Offset of the search result`),
-      orderBy: z
-        .enum(['updatedAt', 'createdAt', 'score'])
-        .optional()
-        .default('score')
-        .describe(`Sort the articles by the specified field`)
-    },
-    async (params) => {
-      const data: searchQuery = await runbook.query('search', params);
-      const searchResults = data.searchResults.nodes.map((article) => ({
-        ...article,
-        url: `${config.baseUrl}${article.url}`
-      }));
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(searchResults, null, 2)
           }
         ]
       };
