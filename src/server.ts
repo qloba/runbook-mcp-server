@@ -41,7 +41,7 @@ async function buildServer() {
       },
       instructions:
         config.description ||
-        'Retrieve documents and workflows in Runbook workspaces'
+        'This MCP server can retrieve documents from Runbook. It can also run workflows.'
     }
   );
 
@@ -79,7 +79,7 @@ async function buildServer() {
 
   server.tool(
     withPrefix('search-articles'),
-    `Search for articles using keywords.
+    `Search for articles using keywords from Runbook.
 The result does not include full article bodies as they are truncated to 200 characters.
 You will need to retrieve the full content by calling \`get-article\``,
     {
