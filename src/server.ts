@@ -8,19 +8,36 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import Runbook from '@runbook-docs/client';
 import {
-  GetArticleQuery,
   GetArticlesQuery,
   GetBooksQuery,
   GetCategoriesQuery,
   searchQuery
 } from '@runbook-docs/client/dist/queries/types';
 import getArticleQuery from './queries/getArticle';
+import getBookWithRunStatesQuery from './queries/getBookWithRunStates';
+import getBookWithRunStateQuery from './queries/getBookWithRunState';
+import getArticleWithPropertiesQuery from './queries/getArticleWithProperties';
+import runProcessQuey from './queries/runProcess';
+import updateRunStateQuery from './queries/updateRunState';
+import {
+  RunState,
+  GetArticleQuery,
+  GetArticleWithPropertiesQuery,
+  GetBookWithRunStatesQuery,
+  GetBookWithRunStateQuery,
+  UpdateRunStateMutation,
+  UpdateRunStateMutationVariables,
+  ArticleWithProperties,
+  RunProcessMutation,
+  RunProcessMutationVariables
+} from './queries/types';
 import config from './config';
 
 const runbook = new Runbook(config);
 
 function withPrefix(str: string) {
-  return config.prefix ? `${config.prefix}-${str}` : str;
+  const prefix = config.prefix || 'runbook';
+  return `${prefix}-${str}`;
 }
 
 function serverName() {
@@ -32,7 +49,7 @@ async function buildServer() {
   const server = new McpServer(
     {
       name: serverName(),
-      version: '1.0.6'
+      version: '1.0.7'
     },
     {
       capabilities: {
@@ -55,8 +72,11 @@ async function buildServer() {
       mimeType: 'application/json'
     },
     async (uri, { articleUid }) => {
-      const data: GetArticleQuery = await runbook.query('getArticle', {
-        articleUid: articleUid.toString()
+      const data: GetArticleQuery = await runbook.graphql({
+        query: getArticleQuery,
+        variables: {
+          articleUid
+        }
       });
       return {
         contents: [
@@ -245,6 +265,225 @@ You will need to retrieve the full content by calling \`get-article\`.
           {
             type: 'text',
             text: JSON.stringify(categories, null, 2)
+          }
+        ]
+      };
+    }
+  );
+
+  server.tool(
+    withPrefix('get-process'),
+    `Get current process information by book UID`,
+    {
+      bookUid: z
+        .string()
+        .describe(
+          `ID of the book. It always starts with 'bk_'. The book type must be 'workflow'.`
+        ),
+      runStateUid: z
+        .string()
+        .optional()
+        .describe(
+          `ID of the run state. It always starts with 'rs_'. If not provided, the first run state will be used.`
+        )
+    },
+    async ({ bookUid, runStateUid }) => {
+      let articleUid: string | null = null;
+      let runState: RunState | null = null;
+      if (runStateUid) {
+        const data: GetBookWithRunStateQuery = await runbook.graphql({
+          query: getBookWithRunStateQuery,
+          variables: {
+            bookUid,
+            runStateUid
+          }
+        });
+        if (!data || data.node.bookType !== 'workflow') {
+          const err = `Book with UID ${bookUid} is not a workflow.`;
+          return {
+            content: [{ type: 'text', text: `Error: ${err}` }]
+          };
+        }
+        runState = data.node.runState;
+        if (runState?.currentArticle?.hasAssignees) {
+          const err = `Run state with UID ${runStateUid} has no current article with assignees.`;
+          return {
+            content: [{ type: 'text', text: `Error: ${err}` }]
+          };
+        }
+        articleUid =
+          data.node.runState?.currentArticle?.uid ||
+          data.node.initialArticle.uid;
+      } else {
+        const data: GetBookWithRunStatesQuery = await runbook.graphql({
+          query: getBookWithRunStatesQuery,
+          variables: {
+            bookUid
+          }
+        });
+        if (!data || data.node.bookType !== 'workflow') {
+          const err = `Book with UID ${bookUid} is not a workflow.`;
+          return {
+            content: [{ type: 'text', text: `Error: ${err}` }]
+          };
+        }
+
+        if (data.node.runStates.nodes.length > 0) {
+          runState = data.node.runStates.nodes[0];
+          if (runState.currentArticle?.hasAssignees) {
+            const err = `Run state with UID ${runStateUid} has no current article with assignees.`;
+            return {
+              content: [{ type: 'text', text: `Error: ${err}` }]
+            };
+          }
+        }
+        articleUid =
+          runState?.currentArticle?.uid || data.node.initialArticle.uid;
+      }
+
+      const data: GetArticleWithPropertiesQuery = await runbook.graphql({
+        query: getArticleWithPropertiesQuery,
+        variables: {
+          articleUid
+        }
+      });
+      const article: ArticleWithProperties = data.node;
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                runState: runState
+                  ? {
+                      uid: runState.uid
+                    }
+                  : null,
+                article: {
+                  uid: article.uid,
+                  name: article.name,
+                  bodyMarkdown: article.bodyMarkdown,
+                  properties: article.properties
+                }
+              },
+              null,
+              2
+            )
+          }
+        ]
+      };
+    }
+  );
+
+  server.tool(
+    withPrefix('run-process'),
+    `This tool is used to start a new process or continue an existing one. If the run state UID is not provided, a new process will be created.`,
+
+    {
+      bookUid: z
+        .string()
+        .describe(
+          `ID of the book. It always starts with 'bk_'. The book type must be 'workflow'.`
+        ),
+      articleUid: z
+        .string()
+        .describe(
+          `ID of the article. It always starts with 'ar_'. The article UID is included in the return value of \`get-process\` and \`run-process\`.`
+        ),
+      runStateUid: z
+        .string()
+        .optional()
+        .describe(
+          `ID of the run state. It always starts with 'rs_'. If not provided, a new process will be created.`
+        ),
+      propertyValues: z
+        .record(z.union([z.string(), z.array(z.string())]))
+        .default({})
+        .describe(
+          `Property values to pass to the process. This is an object whose keys are strings and values are string or string[]. Properties correspond to \`::::input\` elements in the article body.
+Only input elements with type="checkbox" can use string[] type.
+# Example:
+
+## article body
+
+:::input text
+<input type="text" name="3:dhks024mk2yhv7bkrskrp91myr" />
+:::
+
+:::input checkbox
+<label><input type="checkbox" name="3:p8z0zknnpjjm70sahrbec8k440" value="SNS" checked />SNS</label>
+<label><input type="checkbox" name="3:p8z0zknnpjjm70sahrbec8k440" value="YouTube" />YouTube</label>
+:::
+
+## property values
+
+{
+  "3:dhks024mk2yhv7bkrskrp91myr" : "text value",
+  "3:p8z0zknnpjjm70sahrbec8k440" : ["SNS", "YouTube"]
+}`
+        )
+    },
+    async ({ bookUid, articleUid, runStateUid, propertyValues }) => {
+      let article: ArticleWithProperties | null = null;
+      let runState: RunProcessMutation['runProcess']['runState'] | null = null;
+      const values = Object.entries(propertyValues).map(([propId, value]) => ({
+        propId,
+        value: Array.isArray(value) ? JSON.stringify(value) : value
+      }));
+      if (runStateUid) {
+        const data: UpdateRunStateMutation = await runbook.graphql<
+          any,
+          UpdateRunStateMutation,
+          UpdateRunStateMutationVariables
+        >({
+          query: updateRunStateQuery,
+          variables: {
+            uid: runStateUid,
+            articleUid: articleUid,
+            propertyValues: values
+          }
+        });
+        article = data.updateRunState.nextArticle;
+        runState = data.updateRunState.runState;
+      } else {
+        const data: RunProcessMutation = await runbook.graphql<
+          any,
+          RunProcessMutation,
+          RunProcessMutationVariables
+        >({
+          query: runProcessQuey,
+          variables: {
+            bookUid,
+            propertyValues: values
+          }
+        });
+        article = data.runProcess.nextArticle;
+        runState = data.runProcess.runState;
+      }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                runState: runState
+                  ? {
+                      uid: runState.uid
+                    }
+                  : null,
+                nextArticle: article
+                  ? {
+                      uid: article.uid,
+                      name: article.name,
+                      bodyMarkdown: article.bodyMarkdown,
+                      properties: article.properties
+                    }
+                  : null
+              },
+              null,
+              2
+            )
           }
         ]
       };

@@ -1,0 +1,155 @@
+export type RunState = {
+  uid: string;
+  readyToFinish: boolean;
+  status: string;
+  createdAt: string;
+  completedAt: string | null;
+  currentArticle: {
+    uid: string;
+    hasAssignees: boolean;
+  };
+};
+
+export type ArticleWithProperties = {
+  uid: string;
+  name: string;
+  bodyMarkdown: string;
+  createdAt: string;
+  updatedAt: string;
+  properties: Array<{
+    propId: string;
+    propName: string;
+    propCode: string;
+    propType: string;
+    required: boolean;
+    readOnly: boolean;
+  }>;
+};
+
+export type GetArticleWithPropertiesQuery = {
+  node: {
+    __typename: 'Article';
+    uid: string;
+    name: string;
+    bodyMarkdown: string;
+    createdAt: string;
+    updatedAt: string;
+    properties: Array<{
+      propId: string;
+      propName: string;
+      propCode: string;
+      propType: string;
+      required: boolean;
+      readOnly: boolean;
+    }>;
+  };
+};
+
+export type RunProcessMutation = {
+  runProcess: {
+    runState: {
+      uid: string;
+      readyToFinish: boolean;
+      status: string;
+      createdAt: string;
+      completedAt: string | null;
+    };
+    nextArticle: ArticleWithProperties;
+    success: boolean;
+    errors: Array<{
+      attribute: string;
+      message: string;
+      error: string;
+    }>;
+  };
+};
+
+export type UpdateRunStateMutation = {
+  updateRunState: {
+    runState: {
+      uid: string;
+      readyToFinish: boolean;
+      status: string;
+      createdAt: string;
+      completedAt: string | null;
+    };
+    nextArticle: ArticleWithProperties;
+    success: boolean;
+    errors: Array<{
+      attribute: string;
+      message: string;
+      error: string;
+    }>;
+  };
+};
+
+export type UpdateRunStateMutationVariables = {
+  uid: string;
+  articleUid: string;
+  propertyValues: Array<{
+    propId: string;
+    value: string | null;
+  }>;
+};
+
+export type RunProcessMutationVariables = {
+  bookUid: string;
+  propertyValues: Array<{
+    propId: string;
+    value: string | null;
+  }>;
+};
+
+export type GetArticleQuery = {
+  node: {
+    __typename: 'Article';
+    uid: string;
+    name: string;
+    slug: string;
+    id: string;
+    bodyMarkdown: string;
+    createdAt: string;
+    updatedAt: string;
+    allCategories: Array<{
+      uid: string;
+      name: string;
+    }>;
+    folder: {
+      uid: string;
+      name: string;
+    };
+    book: {
+      uid: string;
+      name: string;
+      bookType: string;
+    };
+  };
+};
+
+export type GetBookWithRunStatesQuery = {
+  node: {
+    __typename: 'Book';
+    uid: string;
+    name: string;
+    bookType: string;
+    initialArticle: {
+      uid: string;
+    };
+    runStates: {
+      nodes: Array<RunState>;
+    };
+  };
+};
+
+export type GetBookWithRunStateQuery = {
+  node: {
+    __typename: 'Book';
+    uid: string;
+    name: string;
+    bookType: string;
+    initialArticle: {
+      uid: string;
+    };
+    runState: RunState | null;
+  };
+};

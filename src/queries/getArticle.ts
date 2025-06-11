@@ -21,6 +21,7 @@ query getArticle($articleUid: ID!) {
       book {
         uid
         name
+        bookType
       }
     }
   }
