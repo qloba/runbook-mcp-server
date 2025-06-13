@@ -126,6 +126,29 @@ export type GetArticleQuery = {
   };
 };
 
+export type GetBookQuery = {
+  node: {
+    __typename: 'Book';
+    uid: string;
+    name: string;
+    description: string | null;
+    pathname: string | null;
+    bookType: string;
+    contentsLayout: string | null;
+    hideFolders: boolean | null;
+    sortOrder: string | null;
+    isHidden: boolean | null;
+    initialArticle: {
+      uid: string;
+    };
+    workspace: {
+      uid: string;
+      name: string;
+      description: string | null;
+    };
+  };
+};
+
 export type GetBookWithRunStatesQuery = {
   node: {
     __typename: 'Book';

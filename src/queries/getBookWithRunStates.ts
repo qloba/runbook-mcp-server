@@ -10,7 +10,7 @@ export default `
         __typename
         uid
         name
-        book_type
+        bookType
         initialArticle {
           uid
         }

@@ -18,9 +18,11 @@ import getBookWithRunStatesQuery from './queries/getBookWithRunStates';
 import getBookWithRunStateQuery from './queries/getBookWithRunState';
 import getArticleWithPropertiesQuery from './queries/getArticleWithProperties';
 import runProcessQuey from './queries/runProcess';
+import getBookQuery from './queries/getBook';
 import updateRunStateQuery from './queries/updateRunState';
 import {
   RunState,
+  GetBookQuery,
   GetArticleQuery,
   GetArticleWithPropertiesQuery,
   GetBookWithRunStatesQuery,
@@ -430,6 +432,23 @@ Only input elements with type="checkbox" can use string[] type.
         propId,
         value: Array.isArray(value) ? JSON.stringify(value) : value
       }));
+      const data = await runbook.graphql<
+        any,
+        GetBookQuery,
+        { bookUid: string }
+      >({
+        query: getBookQuery,
+        variables: {
+          bookUid
+        }
+      });
+      const book = data.node;
+      if (!book || book.bookType !== 'workflow') {
+        const err = `Book with UID ${bookUid} is not a workflow.`;
+        return {
+          content: [{ type: 'text', text: `Error: ${err}` }]
+        };
+      }
       if (runStateUid) {
         const data: UpdateRunStateMutation = await runbook.graphql<
           any,
@@ -446,6 +465,12 @@ Only input elements with type="checkbox" can use string[] type.
         article = data.updateRunState.nextArticle;
         runState = data.updateRunState.runState;
       } else {
+        if (articleUid && book.initialArticle.uid !== articleUid) {
+          const err = `Invalid article uid. To create a new process, please specify the initial article's uid of the book with uid ${bookUid}.`;
+          return {
+            content: [{ type: 'text', text: `Error: ${err}` }]
+          };
+        }
         const data: RunProcessMutation = await runbook.graphql<
           any,
           RunProcessMutation,
