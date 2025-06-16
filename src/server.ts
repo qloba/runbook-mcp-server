@@ -32,7 +32,7 @@ import {
   ArticleWithProperties,
   RunProcessMutation,
   RunProcessMutationVariables
-} from './queries/types';
+} from './types';
 import config from './config';
 
 const runbook = new Runbook(config);
@@ -65,7 +65,7 @@ async function buildServer() {
   );
 
   server.resource(
-    withPrefix('article'),
+    'article',
     new ResourceTemplate('runbook://articles/{articleUid}', {
       list: undefined
     }),
@@ -466,7 +466,7 @@ Only input elements with type="checkbox" can use string[] type.
         runState = data.updateRunState.runState;
       } else {
         if (articleUid && book.initialArticle.uid !== articleUid) {
-          const err = `Invalid article uid. To create a new process, please specify the initial article's uid of the book with uid ${bookUid}.`;
+          const err = `Invalid article UID. To create a new process, please specify the UID of the initial article in the book with UID ${bookUid} using \`get-process\`.`;
           return {
             content: [{ type: 'text', text: `Error: ${err}` }]
           };
