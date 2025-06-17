@@ -2,7 +2,6 @@ export default `
   query getBookWithRunStates(
     $bookUid: ID!
     $first: Int = 20
-    $after: String = null
     $offset: Int = null
   ) {
     node(id: $bookUid) {
