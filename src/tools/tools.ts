@@ -276,12 +276,6 @@ You will need to retrieve the full content by calling \`get-article\`.`,
           };
         }
         runState = data.node.runState;
-        if (runState?.currentArticle?.hasAssignees) {
-          const err = `Run state with UID ${runStateUid} has no current article with assignees.`;
-          return {
-            content: [{ type: 'text', text: `Error: ${err}` }]
-          };
-        }
         articleUid =
           data.node.runState?.currentArticle?.uid ||
           data.node.initialArticle.uid;
@@ -301,12 +295,6 @@ You will need to retrieve the full content by calling \`get-article\`.`,
 
         if (data.node.runStates.nodes.length > 0) {
           runState = data.node.runStates.nodes[0];
-          if (runState.currentArticle?.hasAssignees) {
-            const err = `Run state with UID ${runStateUid} has no current article with assignees.`;
-            return {
-              content: [{ type: 'text', text: `Error: ${err}` }]
-            };
-          }
         }
         articleUid =
           runState?.currentArticle?.uid || data.node.initialArticle.uid;
@@ -469,6 +457,10 @@ Only input elements with type="checkbox" can use string[] type.
         runState = data.runProcess.runState;
       }
       let message = null;
+      if (article.hasAssignees && !article.isAssigned) {
+        message = `The article with UID ${articleUid} has assignees, but you are not assigned to it. Please assign yourself to the article to continue.`;
+        article = null;
+      }
       if (runState.readyToFinish) {
         // If the run state is ready to finish, we can call finishProcess
         const data: FinishProcessMutation = await runbook.graphql<

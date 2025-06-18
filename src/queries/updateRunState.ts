@@ -22,6 +22,8 @@ mutation updateRunState(
       uid
       name
       bodyMarkdown
+      hasAssignees
+      isAssigned
       createdAt
       updatedAt
       properties {

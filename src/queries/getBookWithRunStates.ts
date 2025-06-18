@@ -22,7 +22,6 @@ export default `
             completedAt
             currentArticle {
               uid
-              hasAssignees
             }
           }
         }

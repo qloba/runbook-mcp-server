@@ -6,6 +6,8 @@ query getArticleWithProperties($articleUid: ID!) {
       uid
       name
       bodyMarkdown
+      hasAssignees
+      isAssigned
       createdAt
       updatedAt
       properties {

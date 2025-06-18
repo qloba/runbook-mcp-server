@@ -6,7 +6,6 @@ export type RunState = {
   completedAt: string | null;
   currentArticle: {
     uid: string;
-    hasAssignees: boolean;
   };
 };
 
@@ -14,6 +13,8 @@ export type ArticleWithProperties = {
   uid: string;
   name: string;
   bodyMarkdown: string;
+  hasAssignees: boolean;
+  isAssigned: boolean;
   createdAt: string;
   updatedAt: string;
   properties: Array<{
@@ -30,19 +31,7 @@ export type GetArticleWithPropertiesQuery = {
   node: {
     __typename: 'Article';
     uid: string;
-    name: string;
-    bodyMarkdown: string;
-    createdAt: string;
-    updatedAt: string;
-    properties: Array<{
-      propId: string;
-      propName: string;
-      propCode: string;
-      propType: string;
-      required: boolean;
-      readOnly: boolean;
-    }>;
-  };
+  } & ArticleWithProperties;
 };
 
 export type RunProcessMutation = {
