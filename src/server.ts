@@ -112,7 +112,7 @@ async function buildServer() {
       // Handle conditional blocks like {{#if runStateUid}}
       prompt = prompt.replace(
         /{{#if (\w+)}}([^}]*){{\/if}}/g,
-        (match, condition, content) => {
+        (_, condition, content) => {
           return args[condition] ? content : '';
         }
       );

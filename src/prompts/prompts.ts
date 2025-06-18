@@ -15,29 +15,20 @@ export const promptHandlers = {
         name: 'bookUid',
         description:
           'ID of the workflow book to execute. Must start with "bk_" and be of type "workflow".',
-        required: true
-      },
-      {
-        name: 'runStateUid',
-        description:
-          'Optional ID of existing run state to continue. If not provided, starts a new process.',
         required: false
       }
     ],
-    prompt: `以下の手順でプロセスを実行してください。
+    prompt: `Please execute the process according to the following steps:
 
-1. \`${withPrefix('get-process')}\`で現在のプロセス情報を確認し、articleの指示に従ってください。
-2. \`${withPrefix('run-process')}\`でプロセスを実行します。送信する前にproperty_valuesの入力内容をユーザーに確認してください。
-3. 戻り値のnextArticleが存在すれば、さらにその指示に従い、\`${withPrefix('run-process')}\`を実行します。
-4. これを繰り返してプロセスを完了してください。
+1. Check the current process information with \`${withPrefix('get-process')}\` and follow the instructions in the article.
+2. Execute the process with \`${withPrefix('run-process')}\`. Before sending, confirm the contents of property_values with the user.
+3. If the returned value contains nextArticle, follow its instructions and execute \`${withPrefix('run-process')}\` again.
+4. Repeat this until the process is complete.
 
-引数:
-- bookUid: {{bookUid}}
-{{#if runStateUid}}- runStateUid: {{runStateUid}}{{/if}}
-
-重要な注意事項:
-- property_valuesを送信する前に、必ずユーザーに内容を確認してください
-- プロセスの各ステップで、記事の指示を注意深く読んで従ってください
-- エラーが発生した場合は、適切なエラーメッセージを表示してください`
+Important notes:
+- Always respond in the user's language (default is Japanese)
+- Always confirm the contents of property_values with the user before sending
+- Carefully read and follow the instructions in the article at each process step
+- If an error occurs, display an appropriate error message in the user's language`
   }
 };
