@@ -64,6 +64,36 @@ export type RunProcessMutation = {
   };
 };
 
+export type RunProcessMutationVariables = {
+  bookUid: string;
+  propertyValues: Array<{
+    propId: string;
+    value: string | null;
+  }>;
+};
+
+export type FinishProcessMutation = {
+  finishProcess: {
+    runState: {
+      uid: string;
+      readyToFinish: boolean;
+      status: string;
+      createdAt: string;
+      completedAt: string | null;
+    };
+    finishMessage: string | null;
+    success: boolean;
+    errors: Array<{
+      attribute: string;
+      message: string;
+    }>;
+  };
+};
+
+export type FinishProcessMutationVariables = {
+  uid: string;
+};
+
 export type UpdateRunStateMutation = {
   updateRunState: {
     runState: {
@@ -86,14 +116,6 @@ export type UpdateRunStateMutation = {
 export type UpdateRunStateMutationVariables = {
   uid: string;
   articleUid: string;
-  propertyValues: Array<{
-    propId: string;
-    value: string | null;
-  }>;
-};
-
-export type RunProcessMutationVariables = {
-  bookUid: string;
   propertyValues: Array<{
     propId: string;
     value: string | null;

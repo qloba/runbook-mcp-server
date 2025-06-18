@@ -12,6 +12,7 @@ import getArticleWithPropertiesQuery from '../queries/getArticleWithProperties';
 import runProcessQuery from '../queries/runProcess';
 import getBookQuery from '../queries/getBook';
 import updateRunStateQuery from '../queries/updateRunState';
+import finishProcessQuery from '../queries/finishProcess';
 import {
   RunState,
   GetBookQuery,
@@ -23,7 +24,9 @@ import {
   UpdateRunStateMutationVariables,
   ArticleWithProperties,
   RunProcessMutation,
-  RunProcessMutationVariables
+  RunProcessMutationVariables,
+  FinishProcessMutation,
+  FinishProcessMutationVariables
 } from '../types';
 import config from '../config';
 
@@ -465,7 +468,23 @@ Only input elements with type="checkbox" can use string[] type.
         article = data.runProcess.nextArticle;
         runState = data.runProcess.runState;
       }
-
+      let message = null;
+      if (runState.readyToFinish) {
+        // If the run state is ready to finish, we can call finishProcess
+        const data: FinishProcessMutation = await runbook.graphql<
+          any,
+          FinishProcessMutation,
+          FinishProcessMutationVariables
+        >({
+          query: finishProcessQuery,
+          variables: {
+            uid: runState.uid
+          }
+        });
+        runState = data.finishProcess.runState;
+        message = data.finishProcess.finishMessage;
+        article = null;
+      }
       return {
         content: [
           {
@@ -474,7 +493,8 @@ Only input elements with type="checkbox" can use string[] type.
               {
                 runState: runState
                   ? {
-                      uid: runState.uid
+                      uid: runState.uid,
+                      status: runState.status
                     }
                   : null,
                 nextArticle: article
@@ -484,7 +504,8 @@ Only input elements with type="checkbox" can use string[] type.
                       bodyMarkdown: article.bodyMarkdown,
                       properties: article.properties
                     }
-                  : null
+                  : null,
+                message
               },
               null,
               2
