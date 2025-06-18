@@ -7,11 +7,14 @@ import {
   ListResourcesRequestSchema,
   ListResourceTemplatesRequestSchema,
   ListToolsRequestSchema,
-  ReadResourceRequestSchema
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
 import config from './config';
 import { resourceHandlers } from './resources/resources';
 import { toolHandlers } from './tools/tools';
+import { promptHandlers } from './prompts/prompts';
 
 function serverName() {
   const name = 'Runbook';
@@ -27,7 +30,8 @@ async function buildServer() {
     {
       capabilities: {
         resources: {},
-        tools: {}
+        tools: {},
+        prompts: {}
       },
       instructions:
         config.description ||
@@ -76,6 +80,56 @@ async function buildServer() {
     }
 
     return await handler.handler(args);
+  });
+
+  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    return {
+      prompts: Object.entries(promptHandlers).map(([, handler]) => ({
+        name: handler.name,
+        description: handler.description,
+        arguments: handler.arguments
+      }))
+    };
+  });
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    const handler = promptHandlers[name];
+
+    if (!handler) {
+      throw new Error(`Unknown prompt: ${name}`);
+    }
+
+    // Simple template replacement
+    let prompt = handler.prompt;
+
+    if (args) {
+      for (const [key, value] of Object.entries(args)) {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        prompt = prompt.replace(regex, String(value));
+      }
+
+      // Handle conditional blocks like {{#if runStateUid}}
+      prompt = prompt.replace(
+        /{{#if (\w+)}}([^}]*){{\/if}}/g,
+        (match, condition, content) => {
+          return args[condition] ? content : '';
+        }
+      );
+    }
+
+    return {
+      description: handler.description,
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: prompt
+          }
+        }
+      ]
+    };
   });
 
   return server;
