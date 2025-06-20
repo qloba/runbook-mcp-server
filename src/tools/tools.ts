@@ -457,7 +457,7 @@ Only input elements with type="checkbox" can use string[] type.
         runState = data.runProcess.runState;
       }
       let message = null;
-      if (article.hasAssignees && !article.isAssigned) {
+      if (article && article.hasAssignees && !article.isAssigned) {
         message = `The article with UID ${articleUid} has assignees, but you are not assigned to it. Please assign yourself to the article to continue.`;
         article = null;
       }
