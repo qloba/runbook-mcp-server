@@ -9,7 +9,7 @@ export default `
       input: {
         bookUid: $bookUid
         name: $name
-        bodyMarkDown: $bodyMarkdown
+        bodyMarkdown: $bodyMarkdown
         isPublished: true
         categoryUids: $categoryUids
       }

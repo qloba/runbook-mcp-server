@@ -9,7 +9,7 @@ export default `
       input: {
         uid: $uid
         name: $name
-        bodyMarkDown: $body
+        bodyMarkdown: $bodyMarkdown
         isPublished: true
         categoryUids: $categoryUids
         createHistory: true

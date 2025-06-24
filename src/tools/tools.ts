@@ -207,6 +207,9 @@ You can retrieve a list of books with \`list-books\` and categories with \`list-
         },
         categoryUids: {
           type: 'array',
+          items: {
+            type: 'string'
+          },
           description:
             "IDs of the categories to assign to the article. Each ID starts with 'ca_'. You can retrieve a list of categories with `list-categories`."
         }
@@ -277,6 +280,9 @@ You can specify categories for the article by their IDs, which always start with
         },
         categoryUids: {
           type: 'array',
+          items: {
+            type: 'string'
+          },
           description:
             "IDs of the categories to assign to the article. Each ID starts with 'ca_'. You can retrieve a list of categories with `list-categories`."
         }
