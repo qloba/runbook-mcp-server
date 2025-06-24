@@ -187,3 +187,45 @@ export type GetBookWithRunStateQuery = {
     runState: RunState | null;
   };
 };
+
+export type CreateArticleMutation = {
+  createArticle: {
+    article: {
+      uid: string;
+      id: string;
+    };
+    success: boolean;
+    errors: Array<{
+      attribute: string;
+      message: string;
+    }>;
+  };
+};
+
+export type CreateArticleMutationVariables = {
+  bookUid: string;
+  name: string;
+  bodyMarkdown?: string | null;
+  categoryUids?: Array<string> | null;
+};
+
+export type UpdateArticleMutation = {
+  updateArticle: {
+    article: {
+      uid: string;
+      id: string;
+    };
+    success: boolean;
+    errors: Array<{
+      attribute: string;
+      message: string;
+    }>;
+  };
+};
+
+export type UpdateArticleMutationVariables = {
+  uid: string;
+  name?: string | null;
+  bodyMarkdown?: string | null;
+  categoryUids?: Array<string> | null;
+};

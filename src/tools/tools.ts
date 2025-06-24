@@ -6,6 +6,8 @@ import {
   searchQuery
 } from '@runbook-docs/client/dist/queries/types';
 import getArticleQuery from '../queries/getArticle';
+import createArticleQuery from '../queries/createArticle';
+import updateArticleQuery from '../queries/updateArticle';
 import getBookWithRunStatesQuery from '../queries/getBookWithRunStates';
 import getBookWithRunStateQuery from '../queries/getBookWithRunState';
 import getArticleWithPropertiesQuery from '../queries/getArticleWithProperties';
@@ -26,7 +28,11 @@ import {
   RunProcessMutation,
   RunProcessMutationVariables,
   FinishProcessMutation,
-  FinishProcessMutationVariables
+  FinishProcessMutationVariables,
+  UpdateArticleMutation,
+  UpdateArticleMutationVariables,
+  CreateArticleMutation,
+  CreateArticleMutationVariables
 } from '../types';
 import config from '../config';
 
@@ -171,6 +177,148 @@ You will need to retrieve the full content by calling \`get-article\`.`,
           {
             type: 'text',
             text: JSON.stringify(data.node.articles.nodes, null, 2)
+          }
+        ]
+      };
+    }
+  },
+
+  [withPrefix('create-article')]: {
+    description: `Create a new article in a specified book with ID.
+The article body is in Markdown format. The article will be created in the root folder of the book.
+You can specify categories for the article by their IDs, which always start with 'ca_'
+You can retrieve a list of books with \`list-books\` and categories with \`list-categories\`.`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        bookUid: {
+          type: 'string',
+          description:
+            "ID of the book. It always starts with 'bk_'. You can retrieve a list of books with `list-books`"
+        },
+        name: {
+          type: 'string',
+          description: 'Name of the article to create.'
+        },
+        bodyMarkdown: {
+          type: 'string',
+          description:
+            'Body of the article in Markdown format. If not provided, an empty article will be created.'
+        },
+        categoryUids: {
+          type: 'array',
+          description:
+            "IDs of the categories to assign to the article. Each ID starts with 'ca_'. You can retrieve a list of categories with `list-categories`."
+        }
+      }
+    },
+    handler: async ({
+      bookUid,
+      name,
+      bodyMarkdown,
+      categoryUids
+    }: {
+      bookUid: string;
+      name: string;
+      bodyMarkdown?: string;
+      categoryUids?: string[];
+    }) => {
+      const data = await runbook.graphql<
+        any,
+        CreateArticleMutation,
+        CreateArticleMutationVariables
+      >({
+        query: createArticleQuery,
+        variables: {
+          bookUid,
+          name,
+          bodyMarkdown,
+          categoryUids
+        }
+      });
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                uid: data.createArticle.article.uid,
+                url: `${config.baseUrl}/articles/${data.createArticle.article.uid}`
+              },
+              null,
+              2
+            )
+          }
+        ]
+      };
+    }
+  },
+
+  [withPrefix('update-article')]: {
+    description: `Update an existing article by its ID.
+The article body is in Markdown format.
+You can specify categories for the article by their IDs, which always start with 'ca_'.`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        articleUid: {
+          type: 'string',
+          description:
+            'ID of the article to update. It always starts with `ar_`. You can retrieve a list of articles with `list-articles`'
+        },
+        name: {
+          type: 'string',
+          description: 'Name of the article to update.'
+        },
+        bodyMarkdown: {
+          type: 'string',
+          description:
+            'Body of the article in Markdown format. If not provided, the body will not be updated.'
+        },
+        categoryUids: {
+          type: 'array',
+          description:
+            "IDs of the categories to assign to the article. Each ID starts with 'ca_'. You can retrieve a list of categories with `list-categories`."
+        }
+      },
+      required: ['articleUid']
+    },
+    handler: async ({
+      articleUid,
+      name,
+      bodyMarkdown,
+      categoryUids
+    }: {
+      articleUid: string;
+      name?: string;
+      bodyMarkdown?: string;
+      categoryUids?: string[];
+    }) => {
+      const data = await runbook.graphql<
+        any,
+        UpdateArticleMutation,
+        UpdateArticleMutationVariables
+      >({
+        query: updateArticleQuery,
+        variables: {
+          uid: articleUid,
+          name,
+          bodyMarkdown,
+          categoryUids
+        }
+      });
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                uid: data.updateArticle.article.uid,
+                url: `${config.baseUrl}/articles/${data.updateArticle.article.uid}`
+              },
+              null,
+              2
+            )
           }
         ]
       };
