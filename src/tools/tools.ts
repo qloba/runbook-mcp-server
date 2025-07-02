@@ -43,6 +43,20 @@ function withPrefix(str: string) {
   return `${prefix}-${str}`;
 }
 
+function getMarkdownDescription() {
+  return `
+Markdown format supports:
+- Headers: ## H2, ### H3, #### H4. Don't use # H1 as it is reserved for the article title.
+- Bold: **bold text**
+- Italic: _italic text_
+- Lists: - item or 1. numbered item
+- Links: [text](url)
+- Code blocks: \`\`\`\\ncode\\n\`\`\`
+- Tables: | col1 | col2 |\\n| --- | --- |\\n| data | data |
+- Blockquotes: > quoted text
+- Callouts: :::callout info\\ntext\\n::: or :::callout warning\\ntext\\n:::`;
+}
+
 export const toolHandlers = {
   [withPrefix('search-articles')]: {
     description: `Search for articles using keywords from Runbook.
@@ -187,7 +201,7 @@ You will need to retrieve the full content by calling \`get-article\`.`,
     description: `Create a new article in a specified book with ID.
 The article body is in Markdown format. The article will be created in the root folder of the book.
 You can specify categories for the article by their IDs, which always start with 'ca_'
-You can retrieve a list of books with \`list-books\` and categories with \`list-categories\`.`,
+You can retrieve a list of books with \`list-books\` and categories with \`list-categories\`.${getMarkdownDescription()}`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -260,7 +274,7 @@ You can retrieve a list of books with \`list-books\` and categories with \`list-
   [withPrefix('update-article')]: {
     description: `Update an existing article by its ID.
 The article body is in Markdown format.
-You can specify categories for the article by their IDs, which always start with 'ca_'.`,
+You can specify categories for the article by their IDs, which always start with 'ca_'.${getMarkdownDescription()}`,
     inputSchema: {
       type: 'object',
       properties: {
