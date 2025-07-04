@@ -126,7 +126,17 @@ When creating or updating articles, the body content uses Markdown format with t
   | data | data |
   ```
 - **Blockquotes**: `> quoted text`
-- **Callouts**: `:::callout info` + 改行 + `text` + 改行 + `:::` または `:::callout warning` + 改行 + `text` + 改行 + `:::`
+- **Callouts**: 
+  ```
+  :::callout info
+  text
+  :::
+  ```
+  ```
+  :::callout warning
+  text
+  :::
+  ```
 - **SVG images**: `![image.svg](data:image/svg+xml,%3Csvg%20version%3D%221.1%22)`
 
 ## License
