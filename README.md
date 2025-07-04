@@ -104,6 +104,30 @@ Add MCP server with following command.
 npx -y @runbook-docs/mcp-server --api-token=your-api-tokan --base-url=https://yourdomain.runbook.jp
 ```
 
+## Markdown Format
+
+When creating or updating articles, the body content uses Markdown format with the following supported elements:
+
+- **Headers**: `## H2`, `### H3`, `#### H4`. Don't use `# H1` as it is reserved for the article title.
+- **Bold**: `**bold text**`
+- **Italic**: `_italic text_`
+- **Lists**: `- item` or `1. numbered item`
+- **Links**: `[text](url)`
+- **Code blocks**: ````markdown
+```
+code
+```
+````
+- **Tables**:
+```markdown
+| col1 | col2 |
+| --- | --- |
+| data | data |
+```
+- **Blockquotes**: `> quoted text`
+- **Callouts**: `:::callout info\ntext\n:::` or `:::callout warning\ntext\n:::`
+- **SVG images**: `![image.svg](data:image/svg+xml,%3Csvg%20version%3D%221.1%22)`
+
 ## License
 
 This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
