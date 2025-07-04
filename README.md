@@ -113,19 +113,20 @@ When creating or updating articles, the body content uses Markdown format with t
 - **Italic**: `_italic text_`
 - **Lists**: `- item` or `1. numbered item`
 - **Links**: `[text](url)`
-- **Code blocks**: ````markdown
-```
-code
-```
-````
-- **Tables**:
-```markdown
-| col1 | col2 |
-| --- | --- |
-| data | data |
-```
+- **Code blocks**: 
+  ````
+  ```
+  code
+  ```
+  ````
+- **Tables**: 
+  ```
+  | col1 | col2 |
+  | --- | --- |
+  | data | data |
+  ```
 - **Blockquotes**: `> quoted text`
-- **Callouts**: `:::callout info\ntext\n:::` or `:::callout warning\ntext\n:::`
+- **Callouts**: `:::callout info` + 改行 + `text` + 改行 + `:::` または `:::callout warning` + 改行 + `text` + 改行 + `:::`
 - **SVG images**: `![image.svg](data:image/svg+xml,%3Csvg%20version%3D%221.1%22)`
 
 ## License
