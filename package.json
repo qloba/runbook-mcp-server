@@ -1,6 +1,6 @@
 {
   "name": "@runbook-docs/mcp-server",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Runbook Model Context Protocol Server",
   "bin": {
     "runbook-mcp-server": "dist/index.js"

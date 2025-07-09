@@ -55,7 +55,8 @@ Markdown format supports:
 - Tables: | col1 | col2 |\\n| --- | --- |\\n| data | data |
 - Blockquotes: > quoted text
 - Callouts: :::callout info\\ntext\\n::: or :::callout warning\\ntext\\n:::
-- SVG images: ![image.svg](data:image/svg+xml,%3Csvg%20version%3D%221.1%22)`;
+- SVG images: ![image.svg](data:image/svg+xml,%3Csvg%20version%3D%221.1%22)
+- Diagrams: \`\`\`mermaid\\ngraph TD;\\n\`\`\``;
 }
 
 export const toolHandlers = {
