@@ -95,6 +95,13 @@ You will need to retrieve the full content by calling \`get-article\``,
       },
       required: ['keywords']
     },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: 'Search Articles'
+    },
     handler: async (params: any) => {
       const data: searchQuery = await runbook.query('search', params);
       const searchResults = data.searchResults.nodes.map((article) => ({
@@ -124,6 +131,13 @@ You will need to retrieve the full content by calling \`get-article\``,
         }
       },
       required: ['articleUid']
+    },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: 'Get Article'
     },
     handler: async ({ articleUid }: { articleUid: string }) => {
       const data: GetArticleQuery = await runbook.graphql({
@@ -180,6 +194,13 @@ You will need to retrieve the full content by calling \`get-article\`.`,
       },
       required: ['bookUid']
     },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: 'List Articles'
+    },
     handler: async (props: any) => {
       const data: GetArticlesQuery = await runbook.query('getArticles', {
         bookUid: props.bookUid,
@@ -230,6 +251,13 @@ You can retrieve a list of books with \`list-books\` and categories with \`list-
             "IDs of the categories to assign to the article. Each ID starts with 'ca_'. You can retrieve a list of categories with `list-categories`."
         }
       }
+    },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+      readOnlyHint: false,
+      title: 'Create Article'
     },
     handler: async ({
       bookUid,
@@ -305,6 +333,13 @@ You can specify categories for the article by their IDs, which always start with
       },
       required: ['articleUid']
     },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: false,
+      title: 'Update Article'
+    },
     handler: async ({
       articleUid,
       name,
@@ -358,6 +393,13 @@ You can specify categories for the article by their IDs, which always start with
         }
       }
     },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: 'List Books'
+    },
     handler: async ({ bookName }: { bookName?: string }) => {
       const data: GetBooksQuery = await runbook.query('getBooks', {
         q: bookName,
@@ -386,6 +428,13 @@ You can specify categories for the article by their IDs, which always start with
         }
       },
       required: ['bookUid']
+    },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: 'List Categories'
     },
     handler: async ({ bookUid }: { bookUid: string }) => {
       const data: GetCategoriesQuery = await runbook.query('getCategories', {
@@ -421,6 +470,13 @@ You can specify categories for the article by their IDs, which always start with
         }
       },
       required: ['bookUid']
+    },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+      readOnlyHint: true,
+      title: 'Get Process'
     },
     handler: async ({
       bookUid,
@@ -553,6 +609,13 @@ Only input elements with type="checkbox" can use string[] type.
         }
       },
       required: ['bookUid', 'articleUid']
+    },
+    annotations: {
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+      readOnlyHint: false,
+      title: 'Run Process'
     },
     handler: async ({
       bookUid,

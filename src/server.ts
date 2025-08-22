@@ -15,6 +15,7 @@ import config from './config';
 import { resourceHandlers } from './resources/resources';
 import { toolHandlers } from './tools/tools';
 import { promptHandlers } from './prompts/prompts';
+import { title } from 'process';
 
 function serverName() {
   const name = 'Runbook';
@@ -25,7 +26,7 @@ async function buildServer() {
   const server = new Server(
     {
       name: serverName(),
-      version: '1.0.9'
+      version: '1.1.1'
     },
     {
       capabilities: {
@@ -66,7 +67,8 @@ async function buildServer() {
       tools: Object.entries(toolHandlers).map(([name, handler]) => ({
         name,
         description: handler.description,
-        inputSchema: handler.inputSchema
+        inputSchema: handler.inputSchema,
+        annotations: handler.annotations
       }))
     };
   });
@@ -86,6 +88,7 @@ async function buildServer() {
     return {
       prompts: Object.entries(promptHandlers).map(([, handler]) => ({
         name: handler.name,
+        title: handler.title || handler.name,
         description: handler.description,
         arguments: handler.arguments
       }))

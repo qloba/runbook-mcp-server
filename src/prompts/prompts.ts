@@ -8,6 +8,7 @@ function withPrefix(str: string) {
 export const promptHandlers = {
   [withPrefix('execute-workflow')]: {
     name: withPrefix('execute-workflow'),
+    title: 'Execute Workflow',
     description:
       'Execute a Runbook workflow process step by step with user confirmation',
     arguments: [

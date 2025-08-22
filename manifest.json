@@ -1,7 +1,7 @@
 {
   "dxt_version": "0.1",
-  "name": "runbook-mcp-server",
-  "version": "1.0.9",
+  "name": "Runbook",
+  "version": "1.1.1",
   "description": "Runbook Model Context Protocol Server - Access to Runbook's document management and workflow automation capabilities",
   "author": {
     "name": "qloba, inc.",
@@ -27,51 +27,17 @@
     "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/dist/index.js"],
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
       "env": {
         "RUNBOOK_API_TOKEN": "${user_config.api_token}",
         "RUNBOOK_BASE_URL": "${user_config.base_url}"
       }
     }
   },
-  "tools": [
-    {
-      "name": "search-articles",
-      "description": "Search for articles using keywords"
-    },
-    {
-      "name": "get-article",
-      "description": "Retrieve a specific article by ID"
-    },
-    {
-      "name": "list-articles",
-      "description": "List articles in a book"
-    },
-    {
-      "name": "create-article",
-      "description": "Create a new article in a book"
-    },
-    {
-      "name": "update-article",
-      "description": "Update an existing article"
-    },
-    {
-      "name": "list-books",
-      "description": "List available books"
-    },
-    {
-      "name": "list-categories",
-      "description": "List categories in a book"
-    },
-    {
-      "name": "get-process",
-      "description": "Get workflow process information"
-    },
-    {
-      "name": "run-process",
-      "description": "Execute or continue a workflow process"
-    }
-  ],
+  "tools_generated": true,
+  "prompts_generated": true,
   "user_config": {
     "api_token": {
       "type": "string",
@@ -83,9 +49,9 @@
     "base_url": {
       "type": "string",
       "title": "Runbook Base URL",
-      "description": "The base URL for your Runbook instance (e.g., https://org.runbook.com)",
+      "description": "The base URL for your Runbook instance (e.g., https://org.runbook.jp)",
       "required": true,
-      "default": "https://org.runbook.com"
+      "default": "https://org.runbook.jp"
     }
   }
 }
