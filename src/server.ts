@@ -15,7 +15,6 @@ import config from './config';
 import { resourceHandlers } from './resources/resources';
 import { toolHandlers } from './tools/tools';
 import { promptHandlers } from './prompts/prompts';
-import { title } from 'process';
 
 function serverName() {
   const name = 'Runbook';
