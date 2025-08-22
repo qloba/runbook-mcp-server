@@ -25,7 +25,7 @@ async function buildServer() {
   const server = new Server(
     {
       name: serverName(),
-      version: '1.0.7'
+      version: '1.0.9'
     },
     {
       capabilities: {

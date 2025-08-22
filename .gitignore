@@ -1,6 +1,7 @@
 node_modules
 coverage
 dist
+dxt-output
 .npm-debug.log
 env
 .claude
