@@ -5,7 +5,8 @@
   "bin": {
     "runbook-mcp-server": "dist/index.js"
   },
-  "main": "index.js",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
     "prepublishOnly": "npm run build",

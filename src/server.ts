@@ -91,7 +91,7 @@ export async function buildServer(state: McpState) {
 
   server.setRequestHandler(ListPromptsRequestSchema, async () => {
     return {
-      prompts: Object.entries(promptHandlers).map(([, handler]) => ({
+      prompts: Object.entries(promptHandlersInstance).map(([, handler]) => ({
         name: handler.name,
         title: handler.title || handler.name,
         description: handler.description,
