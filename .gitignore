@@ -5,3 +5,4 @@ dxt-output
 .npm-debug.log
 env
 .claude
+.DS_Store
