@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
   ListResourcesRequestSchema,
@@ -11,21 +10,25 @@ import {
   ListPromptsRequestSchema,
   GetPromptRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
-import config from './config';
 import { resourceHandlers } from './resources/resources';
 import { toolHandlers } from './tools/tools';
 import { promptHandlers } from './prompts/prompts';
+import { McpState } from './state';
 
-function serverName() {
-  const name = 'Runbook';
-  return config.prefix ? `${name}-${config.prefix}` : name;
+function kebabToPascal(kebab: string): string {
+  if (!kebab) return '';
+  return kebab
+    .split('-')
+    .filter(Boolean)
+    .map((s) => s[0].toUpperCase() + s.slice(1).toLowerCase())
+    .join('');
 }
 
-async function buildServer() {
+export async function buildServer(state: McpState) {
   const server = new Server(
     {
-      name: serverName(),
-      version: '1.1.1'
+      name: kebabToPascal(state.name),
+      version: '1.2.1'
     },
     {
       capabilities: {
@@ -34,18 +37,21 @@ async function buildServer() {
         prompts: {}
       },
       instructions:
-        config.description ||
-        'This MCP server can retrieve documents from Runbook. It can also run workflows.'
+        'This MCP server can retrieve documents from Runbook. It can also run business workflows.'
     }
   );
 
+  const resourceHandlersInstance = resourceHandlers(state);
+  const toolHandlersInstance = toolHandlers(state);
+  const promptHandlersInstance = promptHandlers(state);
+
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    return { resources: await resourceHandlers.listResources() };
+    return { resources: await resourceHandlersInstance.listResources() };
   });
 
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
-    const content = await resourceHandlers.readResource(uri);
+    const content = await resourceHandlersInstance.readResource(uri);
     return {
       contents: [
         {
@@ -58,12 +64,12 @@ async function buildServer() {
   });
 
   server.setRequestHandler(ListResourceTemplatesRequestSchema, () =>
-    resourceHandlers.listResourceTemplates()
+    resourceHandlersInstance.listResourceTemplates()
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
-      tools: Object.entries(toolHandlers).map(([name, handler]) => ({
+      tools: Object.entries(toolHandlersInstance).map(([name, handler]) => ({
         name,
         description: handler.description,
         inputSchema: handler.inputSchema,
@@ -74,7 +80,7 @@ async function buildServer() {
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    const handler = toolHandlers[name];
+    const handler = toolHandlersInstance[name];
 
     if (!handler) {
       throw new Error(`Unknown tool: ${name}`);
@@ -85,7 +91,7 @@ async function buildServer() {
 
   server.setRequestHandler(ListPromptsRequestSchema, async () => {
     return {
-      prompts: Object.entries(promptHandlers).map(([, handler]) => ({
+      prompts: Object.entries(promptHandlersInstance).map(([, handler]) => ({
         name: handler.name,
         title: handler.title || handler.name,
         description: handler.description,
@@ -96,7 +102,7 @@ async function buildServer() {
 
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    const handler = promptHandlers[name];
+    const handler = promptHandlersInstance[name];
 
     if (!handler) {
       throw new Error(`Unknown prompt: ${name}`);
@@ -135,11 +141,4 @@ async function buildServer() {
   });
 
   return server;
-}
-
-export async function runServer() {
-  console.error(`Base URL ${config.baseUrl}. Starting server.`);
-  const server = await buildServer();
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
 }

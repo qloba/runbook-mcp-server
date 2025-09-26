@@ -1,7 +1,7 @@
 {
   "dxt_version": "0.1",
   "name": "Runbook",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "description": "Runbook Model Context Protocol Server - Access to Runbook's document management and workflow automation capabilities",
   "author": {
     "name": "qloba, inc.",
@@ -27,9 +27,7 @@
     "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": [
-        "${__dirname}/dist/index.js"
-      ],
+      "args": ["${__dirname}/dist/index.js"],
       "env": {
         "RUNBOOK_API_TOKEN": "${user_config.api_token}",
         "RUNBOOK_BASE_URL": "${user_config.base_url}"
