@@ -14,6 +14,8 @@ import { resourceHandlers } from './resources/resources';
 import { toolHandlers } from './tools/tools';
 import { promptHandlers } from './prompts/prompts';
 import { McpState } from './state';
+import { RequestError } from '@runbook-docs/client';
+import { get } from 'http';
 
 function kebabToPascal(kebab: string): string {
   if (!kebab) return '';
@@ -24,11 +26,29 @@ function kebabToPascal(kebab: string): string {
     .join('');
 }
 
+function getErrorResponse(e: any) {
+  let text;
+  if (e instanceof RequestError) {
+    text = JSON.stringify(e.attributes);
+  } else {
+    text = e instanceof Error ? e.message : String(e);
+  }
+  return {
+    content: [
+      {
+        type: 'text',
+        text
+      }
+    ],
+    isError: true
+  };
+}
+
 export async function buildServer(state: McpState) {
   const server = new Server(
     {
       name: kebabToPascal(state.name),
-      version: '1.2.1'
+      version: '1.2.2'
     },
     {
       capabilities: {
@@ -46,26 +66,38 @@ export async function buildServer(state: McpState) {
   const promptHandlersInstance = promptHandlers(state);
 
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    return { resources: await resourceHandlersInstance.listResources() };
+    try {
+      return { resources: await resourceHandlersInstance.listResources() };
+    } catch (e) {
+      return getErrorResponse(e);
+    }
   });
 
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
-    const content = await resourceHandlersInstance.readResource(uri);
-    return {
-      contents: [
-        {
-          uri,
-          text: content,
-          mimeType: 'application/json'
-        }
-      ]
-    };
+    try {
+      const content = await resourceHandlersInstance.readResource(uri);
+      return {
+        contents: [
+          {
+            uri,
+            text: content,
+            mimeType: 'application/json'
+          }
+        ]
+      };
+    } catch (e) {
+      return getErrorResponse(e);
+    }
   });
 
-  server.setRequestHandler(ListResourceTemplatesRequestSchema, () =>
-    resourceHandlersInstance.listResourceTemplates()
-  );
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, () => {
+    try {
+      return resourceHandlersInstance.listResourceTemplates();
+    } catch (e) {
+      return getErrorResponse(e);
+    }
+  });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
@@ -86,7 +118,11 @@ export async function buildServer(state: McpState) {
       throw new Error(`Unknown tool: ${name}`);
     }
 
-    return await handler.handler(args);
+    try {
+      return await handler.handler(args);
+    } catch (e) {
+      return getErrorResponse(e);
+    }
   });
 
   server.setRequestHandler(ListPromptsRequestSchema, async () => {
