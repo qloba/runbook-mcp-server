@@ -3,7 +3,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "lib": [
-      "es2024"
+      "dom",
+      "dom.iterable",
+      "es2024",
     ],
     "stripInternal": true,
     "noUnusedLocals": false,
