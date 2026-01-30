@@ -9,13 +9,13 @@
   "types": "dist/server.d.ts",
   "scripts": {
     "build": "tsc && chmod +x dist/*.js",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm build",
     "watch": "tsc --watch",
     "unit": "jest",
     "lint": "eslint 'src/**/*.ts' --max-warnings 0",
-    "test": "npm run build && npm run unit",
-    "build:dxt": "node scripts/build-dxt.mjs",
-    "package:dxt": "npm run build && npm run build:dxt"
+    "test": "pnpm build && pnpm unit",
+    "build:mcpb": "node scripts/build-mcpb.mjs",
+    "package:mcpb": "pnpm build && pnpm build:mcpb"
   },
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "@runbook-docs/client": "^1.0.7"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@eslint/js": "^9.22.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.10",

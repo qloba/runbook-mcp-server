@@ -76,9 +76,9 @@ To integrate this server with the desktop app, add the following to your app's s
 
 #### Configure Claude Desktop
 
-**Recommended: Install as Desktop Extension (.dxt)**
+**Recommended: Install as Desktop Extension (.mcpb)**
 
-For the easiest setup, download and install the .dxt file from the [releases page](https://github.com/qloba/runbook-mcp-server/releases). This will automatically configure the MCP server in Claude Desktop. For more information about desktop extensions, see the [Anthropic documentation](https://www.anthropic.com/engineering/desktop-extensions).
+For the easiest setup, download and install the .mcpb file from the [releases page](https://github.com/qloba/runbook-mcp-server/releases). This will automatically configure the MCP server in Claude Desktop. For more information about desktop extensions, see the [Anthropic documentation](https://www.anthropic.com/engineering/desktop-extensions).
 
 **Manual Configuration**
 
