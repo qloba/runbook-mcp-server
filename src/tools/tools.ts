@@ -6,6 +6,7 @@ import {
   searchQuery
 } from '@runbook-docs/client/dist/queries/types';
 import getArticleQuery from '../queries/getArticle';
+import getArticleByPathQuery from '../queries/getArticleByPath';
 import createArticleQuery from '../queries/createArticle';
 import updateArticleQuery from '../queries/updateArticle';
 import getBookWithRunStatesQuery from '../queries/getBookWithRunStates';
@@ -19,6 +20,7 @@ import {
   RunState,
   GetBookQuery,
   GetArticleQuery,
+  GetArticleByPathQuery,
   GetArticleWithPropertiesQuery,
   GetBookWithRunStatesQuery,
   GetBookWithRunStateQuery,
@@ -120,7 +122,8 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
     },
 
     [withPrefix('get-article')]: {
-      description: 'Retrieve the article by its ID from the database.',
+      description:
+        'Retrieve the article by its ID or URL from the database. Either articleUid or url must be provided.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -128,9 +131,13 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
             type: 'string',
             description:
               'ID of the article to retrieve. It always starts with `ar_`.'
+          },
+          url: {
+            type: 'string',
+            description:
+              'URL of the article to retrieve. Example: https://example.runbook.jp/docs/movies/2/starwars'
           }
-        },
-        required: ['articleUid']
+        }
       },
       annotations: {
         destructiveHint: false,
@@ -139,21 +146,79 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
         readOnlyHint: true,
         title: 'Get Article'
       },
-      handler: async ({ articleUid }: { articleUid: string }) => {
-        const data: GetArticleQuery = await runbook.graphql({
-          query: getArticleQuery,
-          variables: {
-            articleUid
+      handler: async ({
+        articleUid,
+        url
+      }: {
+        articleUid?: string;
+        url?: string;
+      }) => {
+        if (!articleUid && !url) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Error: Either articleUid or url must be provided.'
+              }
+            ]
+          };
+        }
+
+        let article: GetArticleQuery['node'] | null = null;
+
+        if (articleUid) {
+          const data: GetArticleQuery = await runbook.graphql({
+            query: getArticleQuery,
+            variables: {
+              articleUid
+            }
+          });
+          article = data.node;
+        } else if (url) {
+          const match = url.match(
+            new RegExp('https://[^/]+/[^/]+/([^/]+)/(\\d+)')
+          );
+          if (!match) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: 'Error: Invalid URL format. Expected format: https://example.runbook.jp/docs/{pathname}/{id}/...'
+                }
+              ]
+            };
           }
-        });
+          const pathname = match[1];
+          const articleId = match[2];
+          const data: GetArticleByPathQuery = await runbook.graphql({
+            query: getArticleByPathQuery,
+            variables: {
+              pathname,
+              articleId
+            }
+          });
+          article = data?.book?.article as GetArticleQuery['node'];
+        }
+
+        if (!article) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Error: Article not found.'
+              }
+            ]
+          };
+        }
+
         return {
           content: [
             {
               type: 'text',
               text: JSON.stringify(
                 {
-                  ...data.node,
-                  url: `${state.baseUrl}/articles/${articleUid}`
+                  ...article,
+                  url: `${state.baseUrl}/articles/${article.uid}`
                 },
                 null,
                 2
