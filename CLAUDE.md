@@ -77,6 +77,17 @@ The server reads configuration from multiple sources with this precedence:
 
 Run `npm test` to build and run Jest unit tests. Test files should follow the pattern `*.test.ts` and use the Jest + ts-jest configuration.
 
+## Release Process
+
+バージョンをリリースする際は以下の手順に従う:
+
+1. `package.json`のバージョンを更新する
+2. 変更をコミットしてプッシュする
+3. GitHubでリリースを作成する（タグ名は `v1.2.3` 形式）
+4. GitHub Actionsが自動的に`.mcpb`ファイルをビルドしてリリースにアップロードする
+
+ローカルで`.mcpb`ファイルを生成する場合は `pnpm package:mcpb` を実行する。生成されるファイルは `mcpb-output/runbook-mcp-server-x.x.x.mcpb`。
+
 ## Workflow System
 
 The server supports Runbook's workflow capabilities through `get-process` and `run-process` tools. These handle workflow state management, property values for form inputs, and run state tracking. Workflows require `bookType: 'workflow'` and use special GraphQL mutations for execution.
