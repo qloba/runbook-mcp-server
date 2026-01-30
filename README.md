@@ -143,7 +143,12 @@ When creating or updating articles, the body content uses Markdown format with t
   text
   :::
   ```
-- **SVG images**: `![image.svg](data:image/svg+xml,%3Csvg%20version%3D%221.1%22)`
+- **Diagrams**: 
+  ````
+  ```mermaid
+  graph TD;
+  ```
+  ````
 
 ## License
 
