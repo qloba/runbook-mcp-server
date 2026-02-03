@@ -111,29 +111,38 @@ export type UpdateRunStateMutationVariables = {
   }>;
 };
 
+type Article = {
+  uid: string;
+  name: string;
+  slug: string;
+  id: string;
+  bodyMarkdown: string;
+  createdAt: string;
+  updatedAt: string;
+  allCategories: Array<{
+    uid: string;
+    name: string;
+  }>;
+  folder: {
+    uid: string;
+    name: string;
+  };
+  book: {
+    uid: string;
+    name: string;
+    bookType: string;
+  };
+};
+
 export type GetArticleQuery = {
   node: {
     __typename: 'Article';
-    uid: string;
-    name: string;
-    slug: string;
-    id: string;
-    bodyMarkdown: string;
-    createdAt: string;
-    updatedAt: string;
-    allCategories: Array<{
-      uid: string;
-      name: string;
-    }>;
-    folder: {
-      uid: string;
-      name: string;
-    };
-    book: {
-      uid: string;
-      name: string;
-      bookType: string;
-    };
+  } & Article;
+};
+
+export type GetArticleByPathQuery = {
+  book: {
+    article: Article;
   };
 };
 

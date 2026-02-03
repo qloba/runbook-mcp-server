@@ -6,6 +6,7 @@ import {
   searchQuery
 } from '@runbook-docs/client/dist/queries/types';
 import getArticleQuery from '../queries/getArticle';
+import getArticleByPathQuery from '../queries/getArticleByPath';
 import createArticleQuery from '../queries/createArticle';
 import updateArticleQuery from '../queries/updateArticle';
 import getBookWithRunStatesQuery from '../queries/getBookWithRunStates';
@@ -19,6 +20,7 @@ import {
   RunState,
   GetBookQuery,
   GetArticleQuery,
+  GetArticleByPathQuery,
   GetArticleWithPropertiesQuery,
   GetBookWithRunStatesQuery,
   GetBookWithRunStateQuery,
@@ -120,14 +122,14 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
     },
 
     [withPrefix('get-article')]: {
-      description: 'Retrieve the article by its ID from the database.',
+      description: 'Retrieve the article by its ID or URL from the database.',
       inputSchema: {
         type: 'object',
         properties: {
           articleUid: {
             type: 'string',
             description:
-              'ID of the article to retrieve. It always starts with `ar_`.'
+              'ID or URL of the article to retrieve. ID always starts with `ar_`. URL example: https://example.runbook.jp/docs/movies/2/starwars'
           }
         },
         required: ['articleUid']
@@ -140,20 +142,64 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
         title: 'Get Article'
       },
       handler: async ({ articleUid }: { articleUid: string }) => {
-        const data: GetArticleQuery = await runbook.graphql({
-          query: getArticleQuery,
-          variables: {
-            articleUid
+        let article: GetArticleQuery['node'] | null = null;
+
+        // Check if the input is a URL or an article UID
+        const isUrl = articleUid.startsWith('https://');
+
+        if (isUrl) {
+          const match = articleUid.match(
+            new RegExp('https?://[^/]+/[^/]+/([^/]+)/(\\d+)')
+          );
+          if (!match) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: 'Error: Invalid URL format. Expected format: https://example.runbook.jp/docs/{pathname}/{id}/...'
+                }
+              ]
+            };
           }
-        });
+          const pathname = match[1];
+          const articleId = match[2];
+          const data: GetArticleByPathQuery = await runbook.graphql({
+            query: getArticleByPathQuery,
+            variables: {
+              pathname,
+              articleId
+            }
+          });
+          article = data?.book?.article as GetArticleQuery['node'];
+        } else {
+          const data: GetArticleQuery = await runbook.graphql({
+            query: getArticleQuery,
+            variables: {
+              articleUid
+            }
+          });
+          article = data.node;
+        }
+
+        if (!article) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Error: Article not found.'
+              }
+            ]
+          };
+        }
+
         return {
           content: [
             {
               type: 'text',
               text: JSON.stringify(
                 {
-                  ...data.node,
-                  url: `${state.baseUrl}/articles/${articleUid}`
+                  ...article,
+                  url: `${state.baseUrl}/articles/${article.uid}`
                 },
                 null,
                 2
