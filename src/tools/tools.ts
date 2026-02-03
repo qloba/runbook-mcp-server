@@ -122,22 +122,17 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
     },
 
     [withPrefix('get-article')]: {
-      description:
-        'Retrieve the article by its ID or URL from the database. Either articleUid or url must be provided.',
+      description: 'Retrieve the article by its ID or URL from the database.',
       inputSchema: {
         type: 'object',
         properties: {
           articleUid: {
             type: 'string',
             description:
-              'ID of the article to retrieve. It always starts with `ar_`.'
-          },
-          url: {
-            type: 'string',
-            description:
-              'URL of the article to retrieve. Example: https://example.runbook.jp/docs/movies/2/starwars'
+              'ID or URL of the article to retrieve. ID always starts with `ar_`. URL example: https://example.runbook.jp/docs/movies/2/starwars'
           }
-        }
+        },
+        required: ['articleUid']
       },
       annotations: {
         destructiveHint: false,
@@ -146,37 +141,15 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
         readOnlyHint: true,
         title: 'Get Article'
       },
-      handler: async ({
-        articleUid,
-        url
-      }: {
-        articleUid?: string;
-        url?: string;
-      }) => {
-        if (!articleUid && !url) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Error: Either articleUid or url must be provided.'
-              }
-            ]
-          };
-        }
-
+      handler: async ({ articleUid }: { articleUid: string }) => {
         let article: GetArticleQuery['node'] | null = null;
 
-        if (articleUid) {
-          const data: GetArticleQuery = await runbook.graphql({
-            query: getArticleQuery,
-            variables: {
-              articleUid
-            }
-          });
-          article = data.node;
-        } else if (url) {
-          const match = url.match(
-            new RegExp('https://[^/]+/[^/]+/([^/]+)/(\\d+)')
+        // Check if the input is a URL or an article UID
+        const isUrl = articleUid.startsWith('https://');
+
+        if (isUrl) {
+          const match = articleUid.match(
+            new RegExp('https?://[^/]+/[^/]+/([^/]+)/(\\d+)')
           );
           if (!match) {
             return {
@@ -198,6 +171,14 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
             }
           });
           article = data?.book?.article as GetArticleQuery['node'];
+        } else {
+          const data: GetArticleQuery = await runbook.graphql({
+            query: getArticleQuery,
+            variables: {
+              articleUid
+            }
+          });
+          article = data.node;
         }
 
         if (!article) {
