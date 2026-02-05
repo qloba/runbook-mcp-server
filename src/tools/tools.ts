@@ -1,4 +1,6 @@
 import Runbook from '@runbook-docs/client';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   GetArticlesQuery,
   GetBooksQuery,
@@ -61,7 +63,7 @@ export const toolHandlers = function (state: McpState) {
   const withPrefix = function (str: string) {
     return `${state.name}-${str}`;
   };
-  return {
+  const tools: Record<string, any> = {
     [withPrefix('search-articles')]: {
       description: `Search for articles using keywords from Runbook.
 The result does not include full article bodies as they are truncated to 200 characters.
@@ -781,4 +783,61 @@ Only input elements with type="checkbox" can use string[] type.
       }
     }
   };
+
+  if (state.isLocal) {
+    tools[withPrefix('upload-run-state-file')] = {
+      description: `Upload an attachment file for a running process.
+The uploaded file can be sent to run-process propertyValues as an array of UIDs.
+# Example:
+
+## article body
+:::input file { uid="1:mgkxg1t4jq1sehs47s40xs70wr" required=true readOnly=false }
+Attachment files
+<input type="file" name="1:mgkxg1t4jq1sehs47s40xs70wr" />
+:::
+
+## property values
+{
+  "1:mgkxg1t4jq1sehs47s40xs70wr" : ["<FILE_UID>"]
+}`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          filePath: {
+            type: 'string',
+            description: 'Path to the file to upload'
+          }
+        },
+        required: ['filePath']
+      },
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+        title: 'Upload Run State File'
+      },
+      handler: async ({ filePath }: { filePath: string }) => {
+        const fileBuffer = fs.readFileSync(filePath);
+        const filename = path.basename(filePath);
+        const file = new File([fileBuffer], filename);
+
+        const response = await runbook.uploadFile(
+          file,
+          'run_state_attachment_files',
+          'run_state_attachment_file[blob]'
+        );
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2)
+            }
+          ]
+        };
+      }
+    };
+  }
+  return tools;
 };
