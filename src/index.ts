@@ -10,7 +10,8 @@ async function runServer() {
   const server = await buildServer({
     name: config.prefix || 'runbook',
     baseUrl: config.baseUrl,
-    accessToken: config.apiToken
+    accessToken: config.apiToken,
+    isLocal: true
   });
   const transport = new StdioServerTransport();
   await server.connect(transport);

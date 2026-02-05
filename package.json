@@ -34,7 +34,7 @@
   "homepage": "https://github.com/qloba/runbook-mcp-server#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
-    "@runbook-docs/client": "^1.0.7"
+    "@runbook-docs/client": "^1.1.0"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
