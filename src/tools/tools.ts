@@ -779,6 +779,76 @@ Only input elements with type="checkbox" can use string[] type.
           ]
         };
       }
+    },
+
+    [withPrefix('upload-run-state-file')]: {
+      description: `Upload an attachment file for a running process.
+The uploaded file can be sent to run-process propertyValues as an array of UIDs.
+# Example:
+
+## article body
+:::input file { uid="1:mgkxg1t4jq1sehs47s40xs70wr" required=true readOnly=false }
+Attachment files
+<input type="file" name="1:mgkxg1t4jq1sehs47s40xs70wr" />
+:::
+
+## property values
+{
+  "1:mgkxg1t4jq1sehs47s40xs70wr" : ["<FILE_UID>"]
+}`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          filename: {
+            type: 'string',
+            description: 'Name of the file to upload (e.g., "document.pdf")'
+          },
+          content: {
+            oneOf: [
+              { type: 'string' },
+              { type: 'array', items: { type: 'number' } }
+            ],
+            description:
+              'File content. Provide a string for text files, or an array of bytes (numbers 0-255) for binary files.'
+          }
+        },
+        required: ['filename', 'content']
+      },
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+        readOnlyHint: false,
+        title: 'Upload Run State File'
+      },
+      handler: async ({
+        filename,
+        content
+      }: {
+        filename: string;
+        content: string | number[];
+      }) => {
+        const fileBuffer =
+          typeof content === 'string'
+            ? Buffer.from(content, 'utf-8')
+            : Buffer.from(content);
+        const file = new File([fileBuffer], filename);
+
+        const response = await runbook.uploadFile(
+          file,
+          'run_state_attachment_files',
+          'run_state_attachment_file[blob]'
+        );
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2)
+            }
+          ]
+        };
+      }
     }
   };
 };

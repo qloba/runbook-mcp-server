@@ -12,8 +12,8 @@ importers:
         specifier: ^1.25.3
         version: 1.25.3(hono@4.11.7)(zod@3.25.76)
       '@runbook-docs/client':
-        specifier: ^1.0.7
-        version: 1.0.7
+        specifier: ^1.1.0
+        version: 1.1.0
     devDependencies:
       '@anthropic-ai/mcpb':
         specifier: ^2.1.2
@@ -495,8 +495,8 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@runbook-docs/client@1.0.7':
-    resolution: {integrity: sha512-Lygs/dM99085Mo/7E9pdcjkrCW+6bQCfyZooZxr6DNJXKxO6bVKGKG7Atz7cUqEJQ6yyekGg3HWHGQarFFfkBg==}
+  '@runbook-docs/client@1.1.0':
+    resolution: {integrity: sha512-ce62RMAVGzIVsLeI7W5e9b8NCkF29qgMmxCHgZU8yYbJ06dieYpWAofrFyqIiIeOJ14A8/SkUl0WvlhR0WERlg==}
 
   '@sinclair/typebox@0.34.48':
     resolution: {integrity: sha512-kKJTNuK3AQOrgjjotVxMrCn1sUJwM76wMszfq1kdU4uYVJjvEWuFQ6HgvLt4Xz3fSmZlTOxJ/Ie13KnIcWQXFA==}
@@ -3025,7 +3025,7 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@runbook-docs/client@1.0.7': {}
+  '@runbook-docs/client@1.1.0': {}
 
   '@sinclair/typebox@0.34.48': {}
 
