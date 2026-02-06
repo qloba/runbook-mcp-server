@@ -1,6 +1,4 @@
 import Runbook from '@runbook-docs/client';
-import * as fs from 'fs';
-import * as path from 'path';
 import {
   GetArticlesQuery,
   GetBooksQuery,
@@ -63,7 +61,7 @@ export const toolHandlers = function (state: McpState) {
   const withPrefix = function (str: string) {
     return `${state.name}-${str}`;
   };
-  const tools: Record<string, any> = {
+  return {
     [withPrefix('search-articles')]: {
       description: `Search for articles using keywords from Runbook.
 The result does not include full article bodies as they are truncated to 200 characters.
@@ -780,13 +778,9 @@ Only input elements with type="checkbox" can use string[] type.
             }
           ]
         };
-      }
-    }
-  };
-
-  if (state.isLocal) {
-    tools[withPrefix('upload-run-state-file')] = {
-      description: `Upload an attachment file for a running process.
+      },
+      [withPrefix('upload-run-state-file')]: {
+        description: `Upload an attachment file for a running process.
 The uploaded file can be sent to run-process propertyValues as an array of UIDs.
 # Example:
 
@@ -800,44 +794,60 @@ Attachment files
 {
   "1:mgkxg1t4jq1sehs47s40xs70wr" : ["<FILE_UID>"]
 }`,
-      inputSchema: {
-        type: 'object',
-        properties: {
-          filePath: {
-            type: 'string',
-            description: 'Path to the file to upload'
-          }
-        },
-        required: ['filePath']
-      },
-      annotations: {
-        destructiveHint: false,
-        idempotentHint: false,
-        openWorldHint: false,
-        readOnlyHint: false,
-        title: 'Upload Run State File'
-      },
-      handler: async ({ filePath }: { filePath: string }) => {
-        const fileBuffer = fs.readFileSync(filePath);
-        const filename = path.basename(filePath);
-        const file = new File([fileBuffer], filename);
-
-        const response = await runbook.uploadFile(
-          file,
-          'run_state_attachment_files',
-          'run_state_attachment_file[blob]'
-        );
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2)
+        inputSchema: {
+          type: 'object',
+          properties: {
+            filename: {
+              type: 'string',
+              description: 'Name of the file to upload (e.g., "document.pdf")'
+            },
+            content: {
+              oneOf: [
+                { type: 'string' },
+                { type: 'array', items: { type: 'number' } }
+              ],
+              description:
+                'File content. Provide a string for text files, or an array of bytes (numbers 0-255) for binary files.'
             }
-          ]
-        };
+          },
+          required: ['filename', 'content']
+        },
+        annotations: {
+          destructiveHint: false,
+          idempotentHint: false,
+          openWorldHint: false,
+          readOnlyHint: false,
+          title: 'Upload Run State File'
+        },
+        handler: async ({
+          filename,
+          content
+        }: {
+          filename: string;
+          content: string | number[];
+        }) => {
+          const fileBuffer =
+            typeof content === 'string'
+              ? Buffer.from(content, 'utf-8')
+              : Buffer.from(content);
+          const file = new File([fileBuffer], filename);
+
+          const response = await runbook.uploadFile(
+            file,
+            'run_state_attachment_files',
+            'run_state_attachment_file[blob]'
+          );
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(response, null, 2)
+              }
+            ]
+          };
+        }
       }
-    };
-  }
-  return tools;
+    }
+  };
 };
