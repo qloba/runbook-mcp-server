@@ -56,8 +56,12 @@ export async function buildServer(state: McpState) {
         tools: {},
         prompts: {}
       },
-      instructions:
-        'This MCP server can retrieve documents from Runbook. It can also run business workflows.'
+      instructions: `
+This MCP server provides access to Runbook for document management and business workflow automation.
+Always use Runbook MCP tools (e.g. runbook-create-article, runbook-update-article, runbook-list-articles) to interact with Runbook. Never attempt alternative approaches such as direct HTTP requests or curl commands instead of using these tools.
+This MCP server connects to the Runbook tenant: ${state.baseUrl}.
+When multiple Runbook MCP servers are configured, each connects to a different tenant. Always confirm which tenant the user intends to operate on before creating or updating content. If unclear, ask the user to specify the target tenant.
+`
     }
   );
 
