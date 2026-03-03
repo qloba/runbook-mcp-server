@@ -16,6 +16,8 @@ export default `
         isHidden
         initialArticle {
           uid
+          name
+          bodyMarkdown
         }
         workspace {
           uid
