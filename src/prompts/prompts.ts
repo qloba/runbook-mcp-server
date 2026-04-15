@@ -10,6 +10,7 @@ export const promptHandlers = function (state: McpState) {
       title: 'Execute Workflow',
       description:
         'Execute a Runbook workflow process step by step with user confirmation',
+      arguments: [],
       prompt: `Please execute the process according to the following steps:
 
 1. Determine the workflow bookUid from the current context. It may be given directly as a bookUid (starting with "bk_") or as a Runbook article URL. If it is a URL, first call \`${withPrefix('get-article')}\` with that URL to retrieve the article, and use the bookUid from the article's book field as the workflow bookUid for subsequent steps.

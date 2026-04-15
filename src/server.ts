@@ -15,7 +15,6 @@ import { toolHandlers } from './tools/tools';
 import { promptHandlers } from './prompts/prompts';
 import { McpState } from './state';
 import { RequestError } from '@runbook-docs/client';
-import { get } from 'http';
 
 function kebabToPascal(kebab: string): string {
   if (!kebab) return '';
