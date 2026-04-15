@@ -7,6 +7,10 @@
       "dom.iterable",
       "es2024",
     ],
+    "types": [
+      "node",
+      "jest"
+    ],
     "stripInternal": true,
     "noUnusedLocals": false,
     "strict": true,
@@ -23,6 +27,6 @@
   ],
   "exclude": [
     "node_modules",
-    "build"
+    "dist"
   ]
 }

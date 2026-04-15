@@ -782,8 +782,9 @@ Only input elements with type="checkbox" can use string[] type.
     },
 
     [withPrefix('upload-run-state-file')]: {
-      description: `Upload an attachment file for a running process.
-The uploaded file can be sent to run-process propertyValues as an array of UIDs.
+      description: `Get a presigned URL to upload an attachment file for a running process.
+This tool does NOT upload the file itself. It returns an \`upload_url\` that you must use to upload the file contents via HTTP PUT (e.g., \`curl -X PUT --upload-file <path> "<upload_url>"\` or \`fetch(upload_url, { method: 'PUT', body: <content> })\`). Set the \`Content-Type\` header to match the \`content_type\` if provided.
+After uploading, pass the returned \`uid\` to run-process propertyValues as an array of UIDs.
 # Example:
 
 ## article body
@@ -803,16 +804,13 @@ Attachment files
             type: 'string',
             description: 'Name of the file to upload (e.g., "document.pdf")'
           },
-          content: {
-            oneOf: [
-              { type: 'string' },
-              { type: 'array', items: { type: 'number' } }
-            ],
+          content_type: {
+            type: 'string',
             description:
-              'File content. Provide a string for text files, or an array of bytes (numbers 0-255) for binary files.'
+              'Content type of the file (e.g., "application/pdf"). Optional.'
           }
         },
-        required: ['filename', 'content']
+        required: ['filename']
       },
       annotations: {
         destructiveHint: false,
@@ -823,22 +821,21 @@ Attachment files
       },
       handler: async ({
         filename,
-        content
+        content_type
       }: {
         filename: string;
-        content: string | number[];
+        content_type?: string;
       }) => {
-        const fileBuffer =
-          typeof content === 'string'
-            ? Buffer.from(content, 'utf-8')
-            : Buffer.from(content);
-        const file = new File([fileBuffer], filename);
+        const data: { filename: string; content_type?: string } = { filename };
+        if (content_type) {
+          data.content_type = content_type;
+        }
 
-        const response = await runbook.uploadFile(
-          file,
-          'run_state_attachment_files',
-          'run_state_attachment_file[blob]'
-        );
+        const response = await runbook.api({
+          path: 'run_state_attachment_files/presigned_url',
+          method: 'POST',
+          data
+        });
 
         return {
           content: [
