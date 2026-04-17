@@ -47,7 +47,7 @@ export async function buildServer(state: McpState) {
   const server = new Server(
     {
       name: kebabToPascal(state.name),
-      version: '1.5.0'
+      version: '1.6.0'
     },
     {
       capabilities: {
