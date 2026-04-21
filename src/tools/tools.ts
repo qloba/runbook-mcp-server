@@ -602,7 +602,7 @@ You can specify categories for the article by their IDs, which always start with
 
     [withPrefix('run-process')]: {
       description:
-        'This tool is used to start a new process or continue an existing one. If the run state UID is not provided, a new process will be created.',
+        'This tool is used to start a new process or continue an existing one. If the run state UID is not provided, a new process will be created. Before executing run-process, you must call get-process and follow its instructions.',
       inputSchema: {
         type: 'object',
         properties: {
