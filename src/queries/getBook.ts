@@ -8,12 +8,7 @@ export default `
         uid
         name
         description
-        pathname
         bookType
-        contentsLayout
-        hideFolders
-        sortOrder
-        isHidden
         initialArticle {
           uid
           name

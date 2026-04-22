@@ -66,7 +66,10 @@ export const resourceHandlers = function (state: McpState) {
 
         return JSON.stringify(
           {
-            ...book
+            application: 'Runbook',
+            type: 'Book',
+            ...book,
+            url: `${state.baseUrl}/books/${bookUid}`
           },
           null,
           2
@@ -88,6 +91,8 @@ export const resourceHandlers = function (state: McpState) {
 
         return JSON.stringify(
           {
+            application: 'Runbook',
+            type: 'Article',
             ...data.node,
             url: `${state.baseUrl}/articles/${articleUid}`
           },
