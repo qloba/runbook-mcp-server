@@ -153,6 +153,9 @@ export type GetBookQuery = {
     name: string;
     description: string | null;
     bookType: string;
+    rootFolder: {
+      uid: string;
+    };
     initialArticle: {
       uid: string;
       name: string;
@@ -162,6 +165,42 @@ export type GetBookQuery = {
       uid: string;
       name: string;
       description: string | null;
+    };
+  };
+};
+
+export type ContentFolderNode = {
+  __typename: 'ContentFolderNode';
+  nodeType: string;
+  uid: string;
+  name: string;
+};
+
+export type ContentArticleNode = {
+  __typename: 'ContentArticleNode';
+  nodeType: string;
+  uid: string;
+  name: string;
+  slug: string;
+  id: string;
+  bodySnippet: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ContentNode = ContentFolderNode | ContentArticleNode;
+
+export type GetFolderQuery = {
+  node: {
+    __typename: 'Folder';
+    uid: string;
+    name: string;
+    ancestors: Array<{
+      uid: string;
+      name: string;
+    }>;
+    children: {
+      nodes: Array<ContentNode>;
     };
   };
 };
