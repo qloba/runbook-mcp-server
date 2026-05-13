@@ -9,6 +9,9 @@ export default `
         name
         description
         bookType
+        rootFolder {
+          uid
+        }
         initialArticle {
           uid
           name
