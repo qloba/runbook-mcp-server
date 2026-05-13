@@ -14,6 +14,7 @@ import getBookWithRunStateQuery from '../queries/getBookWithRunState';
 import getArticleWithPropertiesQuery from '../queries/getArticleWithProperties';
 import runProcessQuery from '../queries/runProcess';
 import getBookQuery from '../queries/getBook';
+import getFolderQuery from '../queries/getFolder';
 import updateRunStateQuery from '../queries/updateRunState';
 import finishProcessQuery from '../queries/finishProcess';
 import {
@@ -24,6 +25,7 @@ import {
   GetArticleWithPropertiesQuery,
   GetBookWithRunStatesQuery,
   GetBookWithRunStateQuery,
+  GetFolderQuery,
   UpdateRunStateMutation,
   UpdateRunStateMutationVariables,
   ArticleWithProperties,
@@ -487,6 +489,97 @@ You can specify categories for the article by their IDs, which always start with
             {
               type: 'text',
               text: JSON.stringify(categories, null, 2)
+            }
+          ]
+        };
+      }
+    },
+
+    [withPrefix('get-folder')]: {
+      description: `Retrieve a folder in a book with its ancestors and children (subfolders and articles).
+If \`folderUid\` is not provided, the root folder of the book will be retrieved.
+The articles in the result include only a body snippet. To get the full article body, call \`${withPrefix('get-article')}\`.`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          bookUid: {
+            type: 'string',
+            description: `ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`${withPrefix('list-books')}\``
+          },
+          folderUid: {
+            type: 'string',
+            description:
+              "ID of the folder. It always starts with 'fo_'. If not provided, the root folder of the book will be used."
+          }
+        },
+        required: ['bookUid']
+      },
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
+        title: 'Get Folder'
+      },
+      handler: async ({
+        bookUid,
+        folderUid
+      }: {
+        bookUid: string;
+        folderUid?: string;
+      }) => {
+        let targetFolderUid = folderUid;
+        if (!targetFolderUid) {
+          const data = await runbook.graphql<
+            any,
+            GetBookQuery,
+            { bookUid: string }
+          >({
+            query: getBookQuery,
+            variables: {
+              bookUid
+            }
+          });
+          if (!data.node) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: `Error: Book not found: ${bookUid}`
+                }
+              ]
+            };
+          }
+          targetFolderUid = data.node.rootFolder.uid;
+        }
+
+        const data: GetFolderQuery = await runbook.graphql<
+          any,
+          GetFolderQuery,
+          { folderUid: string }
+        >({
+          query: getFolderQuery,
+          variables: {
+            folderUid: targetFolderUid
+          }
+        });
+
+        if (!data.node) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Error: Folder not found: ${targetFolderUid}`
+              }
+            ]
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data.node, null, 2)
             }
           ]
         };
