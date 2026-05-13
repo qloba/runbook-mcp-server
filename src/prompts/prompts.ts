@@ -38,6 +38,7 @@ This Runbook MCP server exposes these tools (the exact prefix may differ — e.g
 - \`${withPrefix('list-articles')}\` — list articles in a book (returns up to 100, bodies truncated to 200 chars)
 - \`${withPrefix('search-articles')}\` — keyword search across articles, AND-matching, optional \`scope\` (bookUid or workspace UID)
 - \`${withPrefix('list-categories')}\` — list categories within a book
+- \`${withPrefix('get-folder')}\` — fetch a folder in a book with its children (subfolders and articles).
 - \`${withPrefix('get-article')}\` — fetch full article body by \`ar_…\` UID or by URL
 - \`${withPrefix('create-article')}\` / \`${withPrefix('update-article')}\` — create/update articles in Markdown
 - \`${withPrefix('get-process')}\` — read a workflow's current state and its \`:::input\` definitions (call this BEFORE \`run-process\`)
@@ -60,7 +61,7 @@ If a book has an empty \`description\` and an opaque name (e.g. just "Misc" or a
 
 ### 3. Build the description frontmatter
 
-Skim the book names. Pull out 5–10 distinctive book names (especially ones that look like they get referenced by name in everyday conversation — e.g. "API Reference", "Developer Spec", "Daily Report", "Weather Notification") and weave them into the description so the skill triggers when the user mentions any of them.
+Skim the book names. Pull out 5-10 distinctive book names (especially ones that look like they get referenced by name in everyday conversation — e.g. "API Reference", "Developer Spec", "Daily Report", "Weather Notification") and weave them into the description so the skill triggers when the user mentions any of them.
 
 The description should be assertive ("always use this skill when …") rather than tentative — skills tend to under-trigger.
 
