@@ -42,6 +42,12 @@ This MCP server integrates with [Runbook](https://www.runbook.jp) to allow listi
   - List top 100 categories in a specified book with ID.
   - Required inputs:
     - `bookUid` (string): ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`list-books\`.
+- **`get-folder`**
+  - Retrieve a folder in a book with its ancestors and children (subfolders and articles). If `folderUid` is not provided, the root folder of the book will be retrieved. The articles in the result include only a name and UID. To get the full article body, call \`get-article\`.
+  - Required inputs:
+    - `bookUid` (string): ID of the book. It always starts with 'bk_'. You can retrieve a list of books with \`list-books\`.
+  - Optional inputs:
+    - `folderUid` (string): ID of the folder. It always starts with 'fo_'. If not provided, the root folder of the book will be used.
 - **`search-articles`**
   - Search for articles using keywords from Runbook. The result does not include full article bodies as they are truncated to 200 characters. You will need to retrieve the full content by calling \`get-article\`.
   - Required inputs:
