@@ -498,7 +498,7 @@ You can specify categories for the article by their IDs, which always start with
     [withPrefix('get-folder')]: {
       description: `Retrieve a folder in a book with its ancestors and children (subfolders and articles).
 If \`folderUid\` is not provided, the root folder of the book will be retrieved.
-The articles in the result include only a body snippet. To get the full article body, call \`${withPrefix('get-article')}\`.`,
+The articles in the result include only a name and UID. To get the full article body, call \`${withPrefix('get-article')}\`.`,
       inputSchema: {
         type: 'object',
         properties: {

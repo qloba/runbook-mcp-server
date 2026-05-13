@@ -181,11 +181,6 @@ export type ContentArticleNode = {
   nodeType: string;
   uid: string;
   name: string;
-  slug: string;
-  id: string;
-  bodySnippet: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export type ContentNode = ContentFolderNode | ContentArticleNode;

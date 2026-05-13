@@ -10,11 +10,6 @@ export default `
       nodeType
       uid
       name
-      slug
-      id
-      bodySnippet
-      createdAt
-      updatedAt
     }
   }
 
