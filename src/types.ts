@@ -6,7 +6,21 @@ export type RunState = {
   completedAt: string | null;
   currentArticle: {
     uid: string;
+    name: string;
   };
+  runStatePartials: Array<{
+    article: {
+      uid: string;
+      name: string;
+    };
+    properties: Array<{
+      propId: string;
+      propName: string;
+      propCode: string;
+      propType: string;
+      value: string | null;
+    }>;
+  }>;
 };
 
 export type ArticleWithProperties = {
@@ -224,7 +238,35 @@ export type GetBookWithRunStateQuery = {
     initialArticle: {
       uid: string;
     };
-    runState: RunState | null;
+    runState:
+      | (RunState & {
+          assignedArticle: {
+            uid: string;
+            name: string;
+            processed: boolean;
+          };
+        })
+      | null;
+  };
+};
+
+export type GetAssignedRunStatesQuery = {
+  loginUser: {
+    assignedRunStates: {
+      nodes: Array<{
+        uid: string;
+        readyToFinish: boolean;
+        status: string;
+        createdAt: string;
+        completedAt: string | null;
+        assignedArticle: { uid: string; name: string; processed: boolean };
+        book: {
+          uid: string;
+          name: string;
+          description: string | null;
+        };
+      }>;
+    };
   };
 };
 

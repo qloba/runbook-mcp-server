@@ -17,6 +17,7 @@ import getBookQuery from '../queries/getBook';
 import getFolderQuery from '../queries/getFolder';
 import updateRunStateQuery from '../queries/updateRunState';
 import finishProcessQuery from '../queries/finishProcess';
+import getAssignedRunStatesQuery from '../queries/getAssignedRunStates';
 import {
   RunState,
   GetBookQuery,
@@ -25,6 +26,7 @@ import {
   GetArticleWithPropertiesQuery,
   GetBookWithRunStatesQuery,
   GetBookWithRunStateQuery,
+  GetAssignedRunStatesQuery,
   GetFolderQuery,
   UpdateRunStateMutation,
   UpdateRunStateMutationVariables,
@@ -586,6 +588,52 @@ The articles in the result include only a name and UID. To get the full article 
       }
     },
 
+    [withPrefix('list-assigned-process')]: {
+      description: 'Get a list of processes assigned to the current user',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
+        title: 'List Assigned Processes'
+      },
+      handler: async () => {
+        const data: GetAssignedRunStatesQuery = await runbook.graphql({
+          query: getAssignedRunStatesQuery,
+          variables: {
+            status: 'in_progress'
+          }
+        });
+        const runStates = data.loginUser.assignedRunStates.nodes
+          .filter((runState) => {
+            return runState.assignedArticle?.processed === false;
+          })
+          .map((runState) => ({
+            uid: runState.uid,
+            status: runState.status,
+            createdAt: runState.createdAt,
+            book: {
+              uid: runState.book.uid,
+              name: runState.book.name,
+              description: runState.book.description
+            }
+          }));
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(runStates, null, 2)
+            }
+          ]
+        };
+      }
+    },
+
     [withPrefix('get-process')]: {
       description: 'Get current process information by book UID',
       inputSchema: {
@@ -635,14 +683,19 @@ The articles in the result include only a name and UID. To get the full article 
             };
           }
           runState = data.node.runState;
-          articleUid =
-            data.node.runState?.currentArticle?.uid ||
-            data.node.initialArticle.uid;
+          if (data.node.runState?.assignedArticle?.processed === false) {
+            articleUid = data.node.runState.assignedArticle.uid;
+          } else {
+            articleUid =
+              data.node.runState?.currentArticle?.uid ||
+              data.node.initialArticle.uid;
+          }
         } else {
           const data: GetBookWithRunStatesQuery = await runbook.graphql({
             query: getBookWithRunStatesQuery,
             variables: {
-              bookUid
+              bookUid,
+              first: 1
             }
           });
           if (!data || data.node.bookType !== 'workflow') {
@@ -666,6 +719,7 @@ The articles in the result include only a name and UID. To get the full article 
           }
         });
         const article: ArticleWithProperties = data.node;
+
         return {
           content: [
             {
@@ -674,7 +728,9 @@ The articles in the result include only a name and UID. To get the full article 
                 {
                   runState: runState
                     ? {
-                        uid: runState.uid
+                        uid: runState.uid,
+                        status: runState.status,
+                        completed: runState.runStatePartials
                       }
                     : null,
                   article: {

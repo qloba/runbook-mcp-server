@@ -20,6 +20,25 @@ export default `
           completedAt
           currentArticle {
             uid
+            name
+          }
+          runStatePartials {
+            article {
+              uid
+              name
+            }
+            properties {
+              propId
+              propName
+              propCode
+              propType
+              value
+            }
+          }
+          assignedArticle {
+            uid
+            name
+            processed
           }
         }
       }
