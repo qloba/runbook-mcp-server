@@ -588,7 +588,7 @@ The articles in the result include only a name and UID. To get the full article 
       }
     },
 
-    [withPrefix('list-assigned-process')]: {
+    [withPrefix('list-assigned-processes')]: {
       description: 'Get a list of processes assigned to the current user',
       inputSchema: {
         type: 'object',
@@ -605,14 +605,12 @@ The articles in the result include only a name and UID. To get the full article 
         const data: GetAssignedRunStatesQuery = await runbook.graphql({
           query: getAssignedRunStatesQuery,
           variables: {
-            status: 'in_progress'
+            status: 'in_progress',
+            processed: false
           }
         });
-        const runStates = data.loginUser.assignedRunStates.nodes
-          .filter((runState) => {
-            return runState.assignedArticle?.processed === false;
-          })
-          .map((runState) => ({
+        const runStates = data.loginUser.assignedRunStates.nodes.map(
+          (runState) => ({
             uid: runState.uid,
             status: runState.status,
             createdAt: runState.createdAt,
@@ -621,7 +619,8 @@ The articles in the result include only a name and UID. To get the full article 
               name: runState.book.name,
               description: runState.book.description
             }
-          }));
+          })
+        );
 
         return {
           content: [

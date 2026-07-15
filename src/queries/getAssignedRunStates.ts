@@ -1,11 +1,17 @@
 export default `
 query GetAssignedRunStates(
     $status: RunStateStatus!
+    $processed: Boolean
     $first: Int = 20
     $offset: Int = null
   ) {
     loginUser {
-      assignedRunStates(status: $status, first: $first, offset: $offset) {
+      assignedRunStates(
+        status: $status
+        processed: $processed
+        first: $first
+        offset: $offset
+      ) {
         nodes {
           uid
           readyToFinish
@@ -15,11 +21,6 @@ query GetAssignedRunStates(
           user {
             uid
             name
-          }
-          assignedArticle {
-            uid
-            name
-            processed
           }
           book {
             uid

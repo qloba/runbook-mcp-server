@@ -245,7 +245,7 @@ export type GetBookWithRunStateQuery = {
             uid: string;
             name: string;
             processed: boolean;
-          };
+          } | null;
         })
       | null;
   };
@@ -260,7 +260,6 @@ export type GetAssignedRunStatesQuery = {
         status: string;
         createdAt: string;
         completedAt: string | null;
-        assignedArticle: { uid: string; name: string; processed: boolean };
         book: {
           uid: string;
           name: string;
