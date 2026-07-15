@@ -24,7 +24,7 @@ export default `
               uid
               name
             }
-            completedArticles {
+            processedArticles {
               article {
                 uid
                 name

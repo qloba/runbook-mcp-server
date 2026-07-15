@@ -8,7 +8,7 @@ export type RunState = {
     uid: string;
     name: string;
   };
-  completedArticles: Array<{
+  processedArticles: Array<{
     article: {
       uid: string;
       name: string;

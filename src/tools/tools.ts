@@ -729,7 +729,7 @@ The articles in the result include only a name and UID. To get the full article 
                     ? {
                         uid: runState.uid,
                         status: runState.status,
-                        completedArticles: runState.completedArticles
+                        processedArticles: runState.processedArticles
                       }
                     : null,
                   article: {
