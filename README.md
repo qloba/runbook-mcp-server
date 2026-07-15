@@ -57,6 +57,9 @@ This MCP server integrates with [Runbook](https://www.runbook.jp) to allow listi
     - `limit` (number): Number of articles to retrieve.
     - `offset` (number): Offset of the search result.
     - `orderBy` (string): Sort field (updatedAt, createdAt, or 'score'). Default: score.
+- **`list-assigned-process`**
+  - Get a list of in-progress processes (workflow run states) assigned to the current user that are not yet processed. Each result includes the run state UID (starts with 'rs_'), status, creation date, and the book it belongs to. Use the returned `book.uid` and run state `uid` with `get-process` to read the process details.
+  - No inputs.
 - **`get-process`**
   - Get current process information by book UID.
   - Required inputs:
