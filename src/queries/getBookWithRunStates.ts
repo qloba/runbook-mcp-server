@@ -24,7 +24,7 @@ export default `
               uid
               name
             }
-            runStatePartials {
+            completedArticles {
               article {
                 uid
                 name

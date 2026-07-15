@@ -730,7 +730,7 @@ The articles in the result include only a name and UID. To get the full article 
                     ? {
                         uid: runState.uid,
                         status: runState.status,
-                        completed: runState.runStatePartials
+                        completedArticles: runState.completedArticles
                       }
                     : null,
                   article: {
@@ -857,6 +857,16 @@ Only input elements with type="checkbox" can use string[] type.
           });
           article = data.updateRunState.nextArticle;
           runState = data.updateRunState.runState;
+          if (data.updateRunState.isAssignee) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: 'The assigned process has been completed.'
+                }
+              ]
+            };
+          }
         } else {
           if (articleUid && book.initialArticle.uid !== articleUid) {
             const err = `Invalid article UID. To create a new process, please specify the UID of the initial article in the book with UID ${bookUid} using \`${withPrefix('get-process')}\`.`;

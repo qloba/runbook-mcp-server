@@ -8,7 +8,7 @@ export type RunState = {
     uid: string;
     name: string;
   };
-  runStatePartials: Array<{
+  completedArticles: Array<{
     article: {
       uid: string;
       name: string;
@@ -107,6 +107,7 @@ export type UpdateRunStateMutation = {
       completedAt: string | null;
     };
     nextArticle: ArticleWithProperties;
+    isAssignee: boolean;
     success: boolean;
     errors: Array<{
       attribute: string;
