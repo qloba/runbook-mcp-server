@@ -35,6 +35,7 @@ mutation updateRunState(
         readOnly
       }
     }
+    isAssignee
     success
     errors {
       attribute

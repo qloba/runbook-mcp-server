@@ -9,22 +9,22 @@ import getArticleQuery from '../queries/getArticle';
 import getArticleByPathQuery from '../queries/getArticleByPath';
 import createArticleQuery from '../queries/createArticle';
 import updateArticleQuery from '../queries/updateArticle';
-import getBookWithRunStatesQuery from '../queries/getBookWithRunStates';
-import getBookWithRunStateQuery from '../queries/getBookWithRunState';
+import getRunStateQuery from '../queries/getRunState';
 import getArticleWithPropertiesQuery from '../queries/getArticleWithProperties';
 import runProcessQuery from '../queries/runProcess';
 import getBookQuery from '../queries/getBook';
 import getFolderQuery from '../queries/getFolder';
 import updateRunStateQuery from '../queries/updateRunState';
 import finishProcessQuery from '../queries/finishProcess';
+import getAssignedRunStatesQuery from '../queries/getAssignedRunStates';
 import {
   RunState,
   GetBookQuery,
   GetArticleQuery,
   GetArticleByPathQuery,
   GetArticleWithPropertiesQuery,
-  GetBookWithRunStatesQuery,
-  GetBookWithRunStateQuery,
+  GetRunStateQuery,
+  GetAssignedRunStatesQuery,
   GetFolderQuery,
   UpdateRunStateMutation,
   UpdateRunStateMutationVariables,
@@ -586,6 +586,54 @@ The articles in the result include only a name and UID. To get the full article 
       }
     },
 
+    [withPrefix('list-assigned-processes')]: {
+      description: 'Get a list of processes assigned to the current user',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
+        title: 'List Assigned Processes'
+      },
+      handler: async () => {
+        const data: GetAssignedRunStatesQuery = await runbook.graphql({
+          query: getAssignedRunStatesQuery,
+          variables: {
+            status: 'in_progress',
+            processed: false
+          }
+        });
+        const runStates = data.loginUser.assignedRunStates.nodes.map(
+          (runState) => ({
+            uid: runState.uid,
+            status: runState.status,
+            createdAt: runState.createdAt,
+            user: {
+              uid: runState.user.uid,
+              name: runState.user.name
+            },
+            book: {
+              uid: runState.book.uid,
+              name: runState.book.name
+            }
+          })
+        );
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(runStates, null, 2)
+            }
+          ]
+        };
+      }
+    },
+
     [withPrefix('get-process')]: {
       description: 'Get current process information by book UID',
       inputSchema: {
@@ -621,26 +669,40 @@ The articles in the result include only a name and UID. To get the full article 
         let articleUid: string | null = null;
         let runState: RunState | null = null;
         if (runStateUid) {
-          const data: GetBookWithRunStateQuery = await runbook.graphql({
-            query: getBookWithRunStateQuery,
+          const data: GetRunStateQuery = await runbook.graphql({
+            query: getRunStateQuery,
             variables: {
-              bookUid,
               runStateUid
             }
           });
-          if (!data || data.node.bookType !== 'workflow') {
+          if (!data || data.node.book.bookType !== 'workflow') {
             const err = `Book with UID ${bookUid} is not a workflow.`;
             return {
               content: [{ type: 'text', text: `Error: ${err}` }]
             };
           }
-          runState = data.node.runState;
-          articleUid =
-            data.node.runState?.currentArticle?.uid ||
-            data.node.initialArticle.uid;
+          runState = data.node;
+          if (data.node.book.uid !== bookUid) {
+            const err = `Run state with UID ${runStateUid} does not belong to book with UID ${bookUid}.`;
+            return {
+              content: [{ type: 'text', text: `Error: ${err}` }]
+            };
+          }
+          if (data.node.assignedArticle?.processed === false) {
+            articleUid = data.node.assignedArticle.uid;
+          } else {
+            if (data.node.currentArticle) {
+              articleUid = data.node.currentArticle.uid;
+            } else {
+              const text = `Run state with UID ${runStateUid} may have been completed. No current article found.`;
+              return {
+                content: [{ type: 'text', text }]
+              };
+            }
+          }
         } else {
-          const data: GetBookWithRunStatesQuery = await runbook.graphql({
-            query: getBookWithRunStatesQuery,
+          const data: GetBookQuery = await runbook.graphql({
+            query: getBookQuery,
             variables: {
               bookUid
             }
@@ -652,11 +714,7 @@ The articles in the result include only a name and UID. To get the full article 
             };
           }
 
-          if (data.node.runStates.nodes.length > 0) {
-            runState = data.node.runStates.nodes[0];
-          }
-          articleUid =
-            runState?.currentArticle?.uid || data.node.initialArticle.uid;
+          articleUid = data.node.initialArticle.uid;
         }
 
         const data: GetArticleWithPropertiesQuery = await runbook.graphql({
@@ -666,6 +724,7 @@ The articles in the result include only a name and UID. To get the full article 
           }
         });
         const article: ArticleWithProperties = data.node;
+
         return {
           content: [
             {
@@ -674,7 +733,9 @@ The articles in the result include only a name and UID. To get the full article 
                 {
                   runState: runState
                     ? {
-                        uid: runState.uid
+                        uid: runState.uid,
+                        status: runState.status,
+                        processedArticles: runState.processedArticles
                       }
                     : null,
                   article: {
@@ -801,6 +862,16 @@ Only input elements with type="checkbox" can use string[] type.
           });
           article = data.updateRunState.nextArticle;
           runState = data.updateRunState.runState;
+          if (data.updateRunState.isAssignee) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: 'The assigned process has been completed.'
+                }
+              ]
+            };
+          }
         } else {
           if (articleUid && book.initialArticle.uid !== articleUid) {
             const err = `Invalid article UID. To create a new process, please specify the UID of the initial article in the book with UID ${bookUid} using \`${withPrefix('get-process')}\`.`;

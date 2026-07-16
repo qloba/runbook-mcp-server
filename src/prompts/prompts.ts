@@ -41,6 +41,7 @@ This Runbook MCP server exposes these tools (the exact prefix may differ — e.g
 - \`${withPrefix('get-folder')}\` — fetch a folder in a book with its children (subfolders and articles).
 - \`${withPrefix('get-article')}\` — fetch full article body by \`ar_…\` UID or by URL
 - \`${withPrefix('create-article')}\` / \`${withPrefix('update-article')}\` — create/update articles in Markdown
+- \`${withPrefix('list-assigned-processes')}\` — list in-progress workflow runs assigned to the current user (returns \`rs_…\` run state UIDs and their books)
 - \`${withPrefix('get-process')}\` — read a workflow's current state and its \`:::input\` definitions (call this BEFORE \`run-process\`)
 - \`${withPrefix('run-process')}\` — start or continue a workflow run, passing \`propertyValues\`
 - \`${withPrefix('upload-run-state-file')}\` — get a presigned URL for file uploads, then PUT the file via HTTP
@@ -154,6 +155,7 @@ For updates, \`articleUid\` is required. Omitting \`bodyMarkdown\` leaves the bo
 
 For any \`bookType: workflow\`, follow this order strictly. Don't call \`${withPrefix('run-process')}\` cold.
 
+0. **\`${withPrefix('list-assigned-processes')}\`** — when the user asks about workflows "assigned to me", "my tasks", or "what's waiting on me", start here. It returns the in-progress run states (\`rs_…\`) assigned to the current user with their books; feed a \`bookUid\` + \`runStateUid\` into step 1 to continue an existing run.
 1. **\`${withPrefix('get-process')}\`** with the \`bookUid\` (and \`runStateUid\` if continuing). Read the returned \`articleUid\` and the \`:::input\` elements in the body.
 2. **Build \`propertyValues\`** from the \`:::input\` definitions. Keys are the \`name\` attributes (e.g. \`1:abc…\`). Values are strings, except \`checkbox\` inputs which take \`string[]\`.
 3. **\`${withPrefix('run-process')}\`** with \`bookUid\`, \`articleUid\`, and \`propertyValues\`. Omit \`runStateUid\` for new runs.

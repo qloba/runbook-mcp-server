@@ -6,7 +6,21 @@ export type RunState = {
   completedAt: string | null;
   currentArticle: {
     uid: string;
+    name: string;
   };
+  processedArticles: Array<{
+    article: {
+      uid: string;
+      name: string;
+    };
+    properties: Array<{
+      propId: string;
+      propName: string;
+      propCode: string;
+      propType: string;
+      value: string | null;
+    }>;
+  }>;
 };
 
 export type ArticleWithProperties = {
@@ -93,6 +107,7 @@ export type UpdateRunStateMutation = {
       completedAt: string | null;
     };
     nextArticle: ArticleWithProperties;
+    isAssignee: boolean;
     success: boolean;
     errors: Array<{
       attribute: string;
@@ -200,31 +215,45 @@ export type GetFolderQuery = {
   };
 };
 
-export type GetBookWithRunStatesQuery = {
-  node: {
-    __typename: 'Book';
-    uid: string;
-    name: string;
-    bookType: string;
-    initialArticle: {
+export type GetRunStateQuery = {
+  node: RunState & {
+    __typename: 'RunState';
+    assignedArticle: {
       uid: string;
-    };
-    runStates: {
-      nodes: Array<RunState>;
+      name: string;
+      processed: boolean;
+    } | null;
+    book: {
+      uid: string;
+      name: string;
+      bookType: string;
+      initialArticle: {
+        uid: string;
+      };
     };
   };
 };
 
-export type GetBookWithRunStateQuery = {
-  node: {
-    __typename: 'Book';
-    uid: string;
-    name: string;
-    bookType: string;
-    initialArticle: {
-      uid: string;
+export type GetAssignedRunStatesQuery = {
+  loginUser: {
+    assignedRunStates: {
+      nodes: Array<{
+        uid: string;
+        readyToFinish: boolean;
+        status: string;
+        createdAt: string;
+        completedAt: string | null;
+        user: {
+          uid: string;
+          name: string;
+        };
+        book: {
+          uid: string;
+          name: string;
+          description: string | null;
+        };
+      }>;
     };
-    runState: RunState | null;
   };
 };
 
