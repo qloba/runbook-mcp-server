@@ -614,10 +614,13 @@ The articles in the result include only a name and UID. To get the full article 
             uid: runState.uid,
             status: runState.status,
             createdAt: runState.createdAt,
+            user: {
+              uid: runState.user.uid,
+              name: runState.user.name
+            },
             book: {
               uid: runState.book.uid,
-              name: runState.book.name,
-              description: runState.book.description
+              name: runState.book.name
             }
           })
         );

@@ -260,6 +260,10 @@ export type GetAssignedRunStatesQuery = {
         status: string;
         createdAt: string;
         completedAt: string | null;
+        user: {
+          uid: string;
+          name: string;
+        };
         book: {
           uid: string;
           name: string;
