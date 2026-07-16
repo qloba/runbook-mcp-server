@@ -64,6 +64,8 @@ When multiple Runbook MCP servers are configured, each connects to a different t
     }
   );
 
+  const debugEnabled = !!process.env.RUNBOOK_DEBUG;
+
   const resourceHandlersInstance = resourceHandlers(state);
   const toolHandlersInstance = toolHandlers(state);
   const promptHandlersInstance = promptHandlers(state);
@@ -121,9 +123,22 @@ When multiple Runbook MCP servers are configured, each connects to a different t
       throw new Error(`Unknown tool: ${name}`);
     }
 
+    if (debugEnabled) {
+      console.error(`[runbook-mcp][call] ${name}`, JSON.stringify(args));
+    }
     try {
-      return await handler.handler(args);
+      const response = await handler.handler(args);
+      if (debugEnabled) {
+        console.error(
+          `[runbook-mcp][response] ${name}`,
+          JSON.stringify(response, null, 2)
+        );
+      }
+      return response;
     } catch (e) {
+      if (debugEnabled) {
+        console.error(`[runbook-mcp][error] ${name}`, e);
+      }
       return getErrorResponse(e);
     }
   });
