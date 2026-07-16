@@ -215,39 +215,22 @@ export type GetFolderQuery = {
   };
 };
 
-export type GetBookWithRunStatesQuery = {
-  node: {
-    __typename: 'Book';
-    uid: string;
-    name: string;
-    bookType: string;
-    initialArticle: {
+export type GetRunStateQuery = {
+  node: RunState & {
+    __typename: 'RunState';
+    assignedArticle: {
       uid: string;
-    };
-    runStates: {
-      nodes: Array<RunState>;
-    };
-  };
-};
-
-export type GetBookWithRunStateQuery = {
-  node: {
-    __typename: 'Book';
-    uid: string;
-    name: string;
-    bookType: string;
-    initialArticle: {
+      name: string;
+      processed: boolean;
+    } | null;
+    book: {
       uid: string;
+      name: string;
+      bookType: string;
+      initialArticle: {
+        uid: string;
+      };
     };
-    runState:
-      | (RunState & {
-          assignedArticle: {
-            uid: string;
-            name: string;
-            processed: boolean;
-          } | null;
-        })
-      | null;
   };
 };
 

@@ -9,8 +9,7 @@ import getArticleQuery from '../queries/getArticle';
 import getArticleByPathQuery from '../queries/getArticleByPath';
 import createArticleQuery from '../queries/createArticle';
 import updateArticleQuery from '../queries/updateArticle';
-import getBookWithRunStatesQuery from '../queries/getBookWithRunStates';
-import getBookWithRunStateQuery from '../queries/getBookWithRunState';
+import getRunStateQuery from '../queries/getRunState';
 import getArticleWithPropertiesQuery from '../queries/getArticleWithProperties';
 import runProcessQuery from '../queries/runProcess';
 import getBookQuery from '../queries/getBook';
@@ -24,8 +23,7 @@ import {
   GetArticleQuery,
   GetArticleByPathQuery,
   GetArticleWithPropertiesQuery,
-  GetBookWithRunStatesQuery,
-  GetBookWithRunStateQuery,
+  GetRunStateQuery,
   GetAssignedRunStatesQuery,
   GetFolderQuery,
   UpdateRunStateMutation,
@@ -671,33 +669,42 @@ The articles in the result include only a name and UID. To get the full article 
         let articleUid: string | null = null;
         let runState: RunState | null = null;
         if (runStateUid) {
-          const data: GetBookWithRunStateQuery = await runbook.graphql({
-            query: getBookWithRunStateQuery,
+          const data: GetRunStateQuery = await runbook.graphql({
+            query: getRunStateQuery,
             variables: {
-              bookUid,
               runStateUid
             }
           });
-          if (!data || data.node.bookType !== 'workflow') {
+          if (!data || data.node.book.bookType !== 'workflow') {
             const err = `Book with UID ${bookUid} is not a workflow.`;
             return {
               content: [{ type: 'text', text: `Error: ${err}` }]
             };
           }
-          runState = data.node.runState;
-          if (data.node.runState?.assignedArticle?.processed === false) {
-            articleUid = data.node.runState.assignedArticle.uid;
+          runState = data.node;
+          if (data.node.book.uid !== bookUid) {
+            const err = `Run state with UID ${runStateUid} does not belong to book with UID ${bookUid}.`;
+            return {
+              content: [{ type: 'text', text: `Error: ${err}` }]
+            };
+          }
+          if (data.node.assignedArticle?.processed === false) {
+            articleUid = data.node.assignedArticle.uid;
           } else {
-            articleUid =
-              data.node.runState?.currentArticle?.uid ||
-              data.node.initialArticle.uid;
+            if (data.node.currentArticle) {
+              articleUid = data.node.currentArticle.uid;
+            } else {
+              const text = `Run state with UID ${runStateUid} may have been completed. No current article found.`;
+              return {
+                content: [{ type: 'text', text }]
+              };
+            }
           }
         } else {
-          const data: GetBookWithRunStatesQuery = await runbook.graphql({
-            query: getBookWithRunStatesQuery,
+          const data: GetBookQuery = await runbook.graphql({
+            query: getBookQuery,
             variables: {
-              bookUid,
-              first: 1
+              bookUid
             }
           });
           if (!data || data.node.bookType !== 'workflow') {
@@ -707,11 +714,7 @@ The articles in the result include only a name and UID. To get the full article 
             };
           }
 
-          if (data.node.runStates.nodes.length > 0) {
-            runState = data.node.runStates.nodes[0];
-          }
-          articleUid =
-            runState?.currentArticle?.uid || data.node.initialArticle.uid;
+          articleUid = data.node.initialArticle.uid;
         }
 
         const data: GetArticleWithPropertiesQuery = await runbook.graphql({
