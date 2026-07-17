@@ -738,7 +738,7 @@ The articles in the result include only a name and UID. To get the full article 
                         processedArticles: runState.processedArticles
                       }
                     : null,
-                  article: {
+                  currentArticle: {
                     uid: article.uid,
                     name: article.name,
                     bodyMarkdown: article.bodyMarkdown,
