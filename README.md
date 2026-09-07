@@ -1,6 +1,6 @@
 # Runbook MCP server
 
-This MCP server integrates with [Runbook](https://www.runbook.jp) to allow listing, reading, and searching over documents.
+This MCP server integrates with [Runbook](https://www.runbookapp.com/) to allow listing, reading, and searching over documents.
 
 ## Components
 
