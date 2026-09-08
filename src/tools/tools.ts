@@ -7,6 +7,7 @@ import {
 } from '@runbook-docs/client/dist/queries/types';
 import getArticleQuery from '../queries/getArticle';
 import getArticleByPathQuery from '../queries/getArticleByPath';
+import getBookByPathQuery from '../queries/getBookByPath';
 import createArticleQuery from '../queries/createArticle';
 import updateArticleQuery from '../queries/updateArticle';
 import getRunStateQuery from '../queries/getRunState';
@@ -18,8 +19,10 @@ import updateRunStateQuery from '../queries/updateRunState';
 import finishProcessQuery from '../queries/finishProcess';
 import getAssignedRunStatesQuery from '../queries/getAssignedRunStates';
 import {
+  Book,
   RunState,
   GetBookQuery,
+  GetBookByPathQuery,
   GetArticleQuery,
   GetArticleByPathQuery,
   GetArticleWithPropertiesQuery,
@@ -642,12 +645,12 @@ The articles in the result include only a name and UID. To get the full article 
           bookUid: {
             type: 'string',
             description:
-              "ID of the book. It always starts with 'bk_'. The book type must be 'workflow'."
+              "ID or URL of the book to retrieve. ID always starts with 'bk_'. The book type must be 'workflow'. URL example: https://example.runbook.jp/procs/onboarding/..."
           },
           runStateUid: {
             type: 'string',
             description:
-              "ID of the run state. It always starts with 'rs_'. If not provided, the first run state will be used."
+              "ID of the run state. It always starts with 'rs_'. If provided, the process will be retrieved and the current article will be returned."
           }
         },
         required: ['bookUid']
@@ -668,6 +671,7 @@ The articles in the result include only a name and UID. To get the full article 
       }) => {
         let articleUid: string | null = null;
         let runState: RunState | null = null;
+
         if (runStateUid) {
           const data: GetRunStateQuery = await runbook.graphql({
             query: getRunStateQuery,
@@ -675,14 +679,8 @@ The articles in the result include only a name and UID. To get the full article 
               runStateUid
             }
           });
-          if (!data || data.node.book.bookType !== 'workflow') {
-            const err = `Book with UID ${bookUid} is not a workflow.`;
-            return {
-              content: [{ type: 'text', text: `Error: ${err}` }]
-            };
-          }
           runState = data.node;
-          if (data.node.book.uid !== bookUid) {
+          if (bookUid && data.node.book.uid !== bookUid) {
             const err = `Run state with UID ${runStateUid} does not belong to book with UID ${bookUid}.`;
             return {
               content: [{ type: 'text', text: `Error: ${err}` }]
@@ -701,20 +699,49 @@ The articles in the result include only a name and UID. To get the full article 
             }
           }
         } else {
-          const data: GetBookQuery = await runbook.graphql({
-            query: getBookQuery,
-            variables: {
-              bookUid
+          let book: Book | null = null;
+          // Check if the input is a URL or an article UID
+          const isUrl = bookUid.startsWith('https://');
+          if (isUrl) {
+            const match = bookUid.match(
+              new RegExp('https?://[^/]+/procs/([^/]+)')
+            );
+            if (!match) {
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: 'Error: Invalid URL format. Expected format: https://example.runbook.jp/procs/{pathname}/...'
+                  }
+                ]
+              };
             }
-          });
-          if (!data || data.node.bookType !== 'workflow') {
+            const pathname = match[1];
+            const bookData: GetBookByPathQuery = await runbook.graphql({
+              query: getBookByPathQuery,
+              variables: {
+                pathname
+              }
+            });
+            book = bookData?.book;
+          } else {
+            const data: GetBookQuery = await runbook.graphql({
+              query: getBookQuery,
+              variables: {
+                bookUid
+              }
+            });
+            book = data?.node;
+          }
+
+          if (!book || book.bookType !== 'workflow') {
             const err = `Book with UID ${bookUid} is not a workflow.`;
             return {
               content: [{ type: 'text', text: `Error: ${err}` }]
             };
           }
 
-          articleUid = data.node.initialArticle.uid;
+          articleUid = book.initialArticle.uid;
         }
 
         const data: GetArticleWithPropertiesQuery = await runbook.graphql({

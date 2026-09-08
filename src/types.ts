@@ -126,7 +126,7 @@ export type UpdateRunStateMutationVariables = {
   }>;
 };
 
-type Article = {
+export type Article = {
   uid: string;
   name: string;
   slug: string;
@@ -149,6 +149,25 @@ type Article = {
   };
 };
 
+export type Book = {
+  uid: string;
+  name: string;
+  description: string | null;
+  bookType: string;
+  rootFolder: {
+    uid: string;
+  };
+  initialArticle: {
+    uid: string;
+    name: string;
+    bodyMarkdown: string;
+  };
+  workspace: {
+    uid: string;
+    name: string;
+    description: string | null;
+  };
+};
 export type GetArticleQuery = {
   node: {
     __typename: 'Article';
@@ -164,24 +183,11 @@ export type GetArticleByPathQuery = {
 export type GetBookQuery = {
   node: {
     __typename: 'Book';
-    uid: string;
-    name: string;
-    description: string | null;
-    bookType: string;
-    rootFolder: {
-      uid: string;
-    };
-    initialArticle: {
-      uid: string;
-      name: string;
-      bodyMarkdown: string;
-    };
-    workspace: {
-      uid: string;
-      name: string;
-      description: string | null;
-    };
-  };
+  } & Book;
+};
+
+export type GetBookByPathQuery = {
+  book: Book;
 };
 
 export type ContentFolderNode = {
