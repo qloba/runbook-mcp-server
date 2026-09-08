@@ -2,6 +2,7 @@ export default `
   fragment Book on Book {
     uid
     name
+    pathname
     description
     bookType
     rootFolder {

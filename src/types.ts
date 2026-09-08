@@ -152,6 +152,7 @@ export type Article = {
 export type Book = {
   uid: string;
   name: string;
+  pathname: string;
   description: string | null;
   bookType: string;
   rootFolder: {

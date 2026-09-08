@@ -645,12 +645,12 @@ The articles in the result include only a name and UID. To get the full article 
           bookUid: {
             type: 'string',
             description:
-              "ID or URL of the book to retrieve. ID always starts with 'bk_'. The book type must be 'workflow'. URL example: https://example.runbook.jp/procs/onboarding/..."
+              "ID or URL of the book to retrieve. ID always starts with 'bk_'. The book type must be 'workflow'. URL example: https://example.runbook.jp/procs/onboarding/... If the URL has a `run_state` query parameter (e.g. ?run_state=rs_xxxx), that run state is used unless runStateUid is given."
           },
           runStateUid: {
             type: 'string',
             description:
-              "ID of the run state. It always starts with 'rs_'. If provided, the process will be retrieved and the current article will be returned."
+              "ID of the run state. It always starts with 'rs_'. If provided, the process will be retrieved and the current article will be returned. It can also be omitted when the bookUid URL contains a `run_state` query parameter."
           }
         },
         required: ['bookUid']
@@ -673,17 +673,51 @@ The articles in the result include only a name and UID. To get the full article 
         let articleUid: string | null = null;
         let runState: RunState | null = null;
 
-        if (runStateUid) {
+        // Check if the input is a URL or a book UID
+        const isUrl = bookUid.startsWith('https://');
+        let bookPathname: string | null = null;
+        let targetRunStateUid = runStateUid;
+
+        if (isUrl) {
+          const match = bookUid.match(
+            new RegExp('https?://[^/]+/procs/([^/?#]+)')
+          );
+          if (!match) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: 'Error: Invalid URL format. Expected format: https://example.runbook.jp/procs/{pathname}/...'
+                }
+              ]
+            };
+          }
+          bookPathname = match[1];
+          if (!targetRunStateUid) {
+            // The run state may be specified as a `run_state` query parameter
+            const runStateMatch = bookUid.match(
+              new RegExp('[?&]run_state=([^&#]+)')
+            );
+            if (runStateMatch) {
+              targetRunStateUid = decodeURIComponent(runStateMatch[1]);
+            }
+          }
+        }
+
+        if (targetRunStateUid) {
           const data: GetRunStateQuery = await runbook.graphql({
             query: getRunStateQuery,
             variables: {
-              runStateUid
+              runStateUid: targetRunStateUid
             }
           });
           runState = data.node;
           book = data.node.book;
-          if (bookUid && data.node.book.uid !== bookUid) {
-            const err = `Run state with UID ${runStateUid} does not belong to book with UID ${bookUid}.`;
+          const belongsToBook = isUrl
+            ? book.pathname === bookPathname
+            : book.uid === bookUid;
+          if (!belongsToBook) {
+            const err = `Run state with UID ${targetRunStateUid} does not belong to the book specified by ${bookUid}.`;
             return {
               content: [{ type: 'text', text: `Error: ${err}` }]
             };
@@ -694,34 +728,18 @@ The articles in the result include only a name and UID. To get the full article 
             if (data.node.currentArticle) {
               articleUid = data.node.currentArticle.uid;
             } else {
-              const text = `Run state with UID ${runStateUid} may have been completed. No current article found.`;
+              const text = `Run state with UID ${targetRunStateUid} may have been completed. No current article found.`;
               return {
                 content: [{ type: 'text', text }]
               };
             }
           }
         } else {
-          // Check if the input is a URL or an article UID
-          const isUrl = bookUid.startsWith('https://');
           if (isUrl) {
-            const match = bookUid.match(
-              new RegExp('https?://[^/]+/procs/([^/]+)')
-            );
-            if (!match) {
-              return {
-                content: [
-                  {
-                    type: 'text',
-                    text: 'Error: Invalid URL format. Expected format: https://example.runbook.jp/procs/{pathname}/...'
-                  }
-                ]
-              };
-            }
-            const pathname = match[1];
             const bookData: GetBookByPathQuery = await runbook.graphql({
               query: getBookByPathQuery,
               variables: {
-                pathname
+                pathname: bookPathname
               }
             });
             book = bookData?.book;
