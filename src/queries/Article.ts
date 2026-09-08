@@ -20,5 +20,9 @@ export default `
       name
       bookType
     }
+    workspace {
+      uid
+      name
+    }
   }
 `;
