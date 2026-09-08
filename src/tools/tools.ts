@@ -669,6 +669,7 @@ The articles in the result include only a name and UID. To get the full article 
         bookUid: string;
         runStateUid?: string;
       }) => {
+        let book: Book | null = null;
         let articleUid: string | null = null;
         let runState: RunState | null = null;
 
@@ -680,6 +681,7 @@ The articles in the result include only a name and UID. To get the full article 
             }
           });
           runState = data.node;
+          book = data.node.book;
           if (bookUid && data.node.book.uid !== bookUid) {
             const err = `Run state with UID ${runStateUid} does not belong to book with UID ${bookUid}.`;
             return {
@@ -699,7 +701,6 @@ The articles in the result include only a name and UID. To get the full article 
             }
           }
         } else {
-          let book: Book | null = null;
           // Check if the input is a URL or an article UID
           const isUrl = bookUid.startsWith('https://');
           if (isUrl) {
@@ -758,6 +759,12 @@ The articles in the result include only a name and UID. To get the full article 
               type: 'text',
               text: JSON.stringify(
                 {
+                  uid: book.uid,
+                  name: book.name,
+                  workspace: {
+                    uid: book.workspace.uid,
+                    name: book.workspace.name
+                  },
                   runState: runState
                     ? {
                         uid: runState.uid,

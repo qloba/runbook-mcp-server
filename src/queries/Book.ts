@@ -10,7 +10,6 @@ export default `
     initialArticle {
       uid
       name
-      bodyMarkdown
     }
     workspace {
       uid

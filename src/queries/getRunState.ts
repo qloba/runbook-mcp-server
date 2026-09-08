@@ -1,4 +1,6 @@
+import Book from './Book';
 export default `
+  ${Book}
   query getRunState(
     $runStateUid: ID!
   ) {
@@ -33,12 +35,7 @@ export default `
           processed
         }
         book {
-          uid
-          name
-          bookType
-          initialArticle {
-            uid
-          } 
+          ...Book
         }
       }
     }

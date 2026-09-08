@@ -160,7 +160,6 @@ export type Book = {
   initialArticle: {
     uid: string;
     name: string;
-    bodyMarkdown: string;
   };
   workspace: {
     uid: string;
@@ -229,14 +228,7 @@ export type GetRunStateQuery = {
       name: string;
       processed: boolean;
     } | null;
-    book: {
-      uid: string;
-      name: string;
-      bookType: string;
-      initialArticle: {
-        uid: string;
-      };
-    };
+    book: Book;
   };
 };
 
