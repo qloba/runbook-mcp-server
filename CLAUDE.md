@@ -34,6 +34,7 @@ The codebase follows a modular MCP server architecture:
 
 ### Core Structure
 - **src/server.ts**: MCP server setup using `Server` from `@modelcontextprotocol/server` (SDK v2)
+- **src/index.ts**: stdio entry point. `serveStdio(() => buildServer(...))` serves both protocol eras: 2026-07-28 (`server/discover`) and 2025-era clients (`initialize`)
 - **src/tools/tools.ts**: All tool implementations (search, get, list, process operations)
 - **src/resources/resources.ts**: Resource handlers for `runbook://books/*` and `runbook://articles/*` URIs
 - **src/queries/**: GraphQL query definitions for Runbook API integration
@@ -76,6 +77,10 @@ The server reads configuration from multiple sources with this precedence:
 ## Testing
 
 Run `npm test` to build and run Jest unit tests. Test files should follow the pattern `*.test.ts` and use the Jest + ts-jest configuration.
+
+Tests connect a real MCP `Client` to `buildServer()` through `src/__test__/helpers.ts`, mocking only the Runbook API. Suites run in both protocol eras via `describe.each(ERAS)`: `legacy` uses `InMemoryTransport`, `modern` (2026-07-28) uses `createMcpHandler` driven through its fetch function.
+
+`pnpm smoke` (after `pnpm build`) runs `scripts/smoke.mjs`, which spawns `dist/index.js` through the MCP Inspector CLI in both eras without reaching the Runbook API.
 
 ## Release Process
 
