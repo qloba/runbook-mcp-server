@@ -15,7 +15,8 @@
     "lint": "eslint 'src/**/*.ts' --max-warnings 0",
     "test": "pnpm build && pnpm unit",
     "build:mcpb": "node scripts/build-mcpb.mjs",
-    "package:mcpb": "pnpm build && pnpm build:mcpb"
+    "package:mcpb": "pnpm build && pnpm build:mcpb",
+    "smoke": "node scripts/smoke.mjs"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
   ],
   "author": "qloba, inc.",
   "license": "MIT",
+  "packageManager": "pnpm@11.17.0",
   "bugs": {
     "url": "https://github.com/qloba/runbook-mcp-server/issues"
   },
@@ -52,10 +54,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "unrs-resolver"
-    ]
   }
 }
