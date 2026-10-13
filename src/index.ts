@@ -2,7 +2,7 @@
 
 import { buildServer } from './server';
 import Config from './config';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 
 async function runServer() {
   const config = new Config();

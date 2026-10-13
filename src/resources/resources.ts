@@ -1,4 +1,9 @@
-import { Resource } from '@modelcontextprotocol/sdk/types.js';
+import {
+  ProtocolError,
+  ProtocolErrorCode,
+  Resource,
+  ResourceNotFoundError
+} from '@modelcontextprotocol/server';
 import Runbook from '@runbook-docs/client';
 import { GetBooksQuery } from '@runbook-docs/client/dist/queries/types';
 import { GetArticleQuery, GetBookQuery } from '../types';
@@ -61,7 +66,7 @@ export const resourceHandlers = function (state: McpState) {
 
         const book = data.node;
         if (!book) {
-          throw new Error(`Book not found: ${bookUid}`);
+          throw new ResourceNotFoundError(uri, `Book not found: ${bookUid}`);
         }
 
         return JSON.stringify(
@@ -101,7 +106,10 @@ export const resourceHandlers = function (state: McpState) {
         );
       }
 
-      throw new Error(`Invalid URI: ${uri}`);
+      throw new ProtocolError(
+        ProtocolErrorCode.InvalidParams,
+        `Invalid URI: ${uri}`
+      );
     }
   };
 };
