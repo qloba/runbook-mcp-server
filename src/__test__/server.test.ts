@@ -56,7 +56,7 @@ describe.each(ERAS)('%s era', (era: Era) => {
       const serverInfo = result._meta?.['io.modelcontextprotocol/serverInfo'];
 
       if (era === 'modern') {
-        expect(serverInfo).toEqual({ name: 'Runbook', version: '1.9.0' });
+        expect(serverInfo).toEqual({ name: 'Runbook', version: '1.10.0' });
       } else {
         expect(serverInfo).toBeUndefined();
       }
