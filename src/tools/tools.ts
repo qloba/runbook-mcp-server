@@ -42,6 +42,18 @@ import {
   CreateArticleMutationVariables
 } from '../types';
 import { McpState } from '../state';
+import {
+  CallToolResult,
+  Tool,
+  ToolAnnotations
+} from '@modelcontextprotocol/server';
+
+export interface ToolHandler {
+  description: string;
+  inputSchema: Tool['inputSchema'];
+  annotations: ToolAnnotations;
+  handler: (params: any) => Promise<CallToolResult>;
+}
 
 function getMarkdownDescription() {
   return `
@@ -58,7 +70,9 @@ Markdown format supports:
 - Diagrams: \`\`\`mermaid\\ngraph TD;\\n\`\`\``;
 }
 
-export const toolHandlers = function (state: McpState) {
+export const toolHandlers = function (
+  state: McpState
+): Record<string, ToolHandler> {
   const runbook = new Runbook({
     baseUrl: state.baseUrl,
     apiToken: state.accessToken

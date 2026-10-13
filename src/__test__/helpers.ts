@@ -13,8 +13,7 @@
 // and then call mockRunbook() to get the mocked API methods.
 
 import Runbook from '@runbook-docs/client';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { buildServer } from '../server';
 import { McpState } from '../state';
 

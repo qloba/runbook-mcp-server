@@ -1,3 +1,4 @@
+import { ProtocolErrorCode } from '@modelcontextprotocol/client';
 import { RequestError } from '@runbook-docs/client';
 import getArticleQuery from '../queries/getArticle';
 import getBookQuery from '../queries/getBook';
@@ -179,19 +180,33 @@ describe('resources', () => {
     });
   });
 
-  // readResource answers failures with a tool-style { content, isError }
-  // instead of a JSON-RPC error, which the client rejects as invalid.
-  it.each([
-    ['an unknown URI', 'runbook://folders/fo_1', {}],
-    [
-      'a missing book',
-      'runbook://books/bk_none',
-      { [getBookQuery]: { node: null } }
-    ]
-  ])('fails to read %s', async (_, uri, responses) => {
-    respondToGraphql(runbook, responses);
+  it('rejects an unknown URI as invalid params', async () => {
+    await expect(
+      conn.client.readResource({ uri: 'runbook://folders/fo_1' })
+    ).rejects.toMatchObject({
+      code: ProtocolErrorCode.InvalidParams,
+      message: expect.stringContaining('Invalid URI: runbook://folders/fo_1')
+    });
+  });
 
-    await expect(conn.client.readResource({ uri })).rejects.toThrow();
+  // Per the 2026-07-28 spec, a missing resource is -32602 with the URI in
+  // data, not the legacy -32002
+  it('rejects a missing book as invalid params with the URI', async () => {
+    respondToGraphql(runbook, { [getBookQuery]: { node: null } });
+
+    await expect(
+      conn.client.readResource({ uri: 'runbook://books/bk_none' })
+    ).rejects.toMatchObject({
+      code: ProtocolErrorCode.InvalidParams,
+      message: expect.stringContaining('Book not found: bk_none'),
+      data: { uri: 'runbook://books/bk_none' }
+    });
+  });
+
+  it('rejects API failures when listing resources', async () => {
+    runbook.query.mockRejectedValue(new Error('timeout'));
+
+    await expect(conn.client.listResources()).rejects.toThrow(/timeout/);
   });
 });
 

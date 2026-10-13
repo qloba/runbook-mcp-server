@@ -1,15 +1,6 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import {
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListResourceTemplatesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResult, Server } from '@modelcontextprotocol/server';
 import { resourceHandlers } from './resources/resources';
 import { toolHandlers } from './tools/tools';
 import { promptHandlers } from './prompts/prompts';
@@ -25,7 +16,7 @@ function kebabToPascal(kebab: string): string {
     .join('');
 }
 
-function getErrorResponse(e: any) {
+function getErrorResponse(e: any): CallToolResult {
   let text;
   if (e instanceof RequestError) {
     text = JSON.stringify(e.attributes);
@@ -35,7 +26,7 @@ function getErrorResponse(e: any) {
   return {
     content: [
       {
-        type: 'text',
+        type: 'text' as const,
         text
       }
     ],
@@ -70,41 +61,31 @@ When multiple Runbook MCP servers are configured, each connects to a different t
   const toolHandlersInstance = toolHandlers(state);
   const promptHandlersInstance = promptHandlers(state);
 
-  server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    try {
-      return { resources: await resourceHandlersInstance.listResources() };
-    } catch (e) {
-      return getErrorResponse(e);
-    }
+  // Resource errors propagate as JSON-RPC errors; unlike tools, resource
+  // results have no isError field to carry them.
+  server.setRequestHandler('resources/list', async () => {
+    return { resources: await resourceHandlersInstance.listResources() };
   });
 
-  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  server.setRequestHandler('resources/read', async (request) => {
     const { uri } = request.params;
-    try {
-      const content = await resourceHandlersInstance.readResource(uri);
-      return {
-        contents: [
-          {
-            uri,
-            text: content,
-            mimeType: 'application/json'
-          }
-        ]
-      };
-    } catch (e) {
-      return getErrorResponse(e);
-    }
+    const content = await resourceHandlersInstance.readResource(uri);
+    return {
+      contents: [
+        {
+          uri,
+          text: content,
+          mimeType: 'application/json'
+        }
+      ]
+    };
   });
 
-  server.setRequestHandler(ListResourceTemplatesRequestSchema, () => {
-    try {
-      return resourceHandlersInstance.listResourceTemplates();
-    } catch (e) {
-      return getErrorResponse(e);
-    }
+  server.setRequestHandler('resources/templates/list', () => {
+    return resourceHandlersInstance.listResourceTemplates();
   });
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
+  server.setRequestHandler('tools/list', async () => {
     return {
       tools: Object.entries(toolHandlersInstance).map(([name, handler]) => ({
         name,
@@ -115,7 +96,7 @@ When multiple Runbook MCP servers are configured, each connects to a different t
     };
   });
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler('tools/call', async (request) => {
     const { name, arguments: args } = request.params;
     const handler = toolHandlersInstance[name];
 
@@ -143,7 +124,7 @@ When multiple Runbook MCP servers are configured, each connects to a different t
     }
   });
 
-  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+  server.setRequestHandler('prompts/list', async () => {
     return {
       prompts: Object.entries(promptHandlersInstance).map(([, handler]) => ({
         name: handler.name,
@@ -154,7 +135,7 @@ When multiple Runbook MCP servers are configured, each connects to a different t
     };
   });
 
-  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  server.setRequestHandler('prompts/get', async (request) => {
     const { name, arguments: args } = request.params;
     const handler = promptHandlersInstance[name];
 

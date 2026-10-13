@@ -33,7 +33,7 @@ npm start
 The codebase follows a modular MCP server architecture:
 
 ### Core Structure
-- **src/server.ts**: MCP server setup using `@modelcontextprotocol/sdk/server/index.js`
+- **src/server.ts**: MCP server setup using `Server` from `@modelcontextprotocol/server` (SDK v2)
 - **src/tools/tools.ts**: All tool implementations (search, get, list, process operations)
 - **src/resources/resources.ts**: Resource handlers for `runbook://books/*` and `runbook://articles/*` URIs
 - **src/queries/**: GraphQL query definitions for Runbook API integration
