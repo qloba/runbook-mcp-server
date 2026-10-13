@@ -2,21 +2,22 @@
 
 import { buildServer } from './server';
 import Config from './config';
-import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
+import { serveStdio } from '@modelcontextprotocol/server/stdio';
 
-async function runServer() {
-  const config = new Config();
-  console.error(`Base URL ${config.baseUrl}. Starting server.`);
-  const server = await buildServer({
+const config = new Config();
+console.error(`Base URL ${config.baseUrl}. Starting server.`);
+
+// serveStdio picks the protocol era from the client's opening message:
+// 2026-07-28 clients get a modern connection, 2025-era clients are still
+// served through the initialize handshake.
+const handle = serveStdio(() =>
+  buildServer({
     name: config.prefix || 'runbook',
     baseUrl: config.baseUrl,
     accessToken: config.apiToken
-  });
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-}
+  })
+);
 
-runServer().catch((error) => {
-  console.error('Fatal error running server:', error);
-  process.exit(1);
+process.on('SIGINT', () => {
+  void handle.close();
 });

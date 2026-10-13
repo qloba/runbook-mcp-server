@@ -1,6 +1,8 @@
 // Shared harness for the MCP protocol tests. It links a real SDK Client to a
-// server built by buildServer() over an in-memory transport, so assertions are
-// on what crosses the wire: the tool list, call results and errors.
+// server built by buildServer() in-process, so assertions are on what crosses
+// the wire: the tool list, call results and errors. connect() speaks either
+// protocol era: 'legacy' (2025-11-25, initialize handshake) or 'modern'
+// (2026-07-28, server/discover).
 //
 // Only the Runbook API client is mocked. Each test file must declare:
 //
@@ -13,7 +15,12 @@
 // and then call mockRunbook() to get the mocked API methods.
 
 import Runbook from '@runbook-docs/client';
-import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
+import {
+  Client,
+  InMemoryTransport,
+  StreamableHTTPClientTransport
+} from '@modelcontextprotocol/client';
+import { createMcpHandler } from '@modelcontextprotocol/server';
 import { buildServer } from '../server';
 import { McpState } from '../state';
 
@@ -73,10 +80,19 @@ export interface Connected {
   close: () => Promise<void>;
 }
 
+export type Era = 'legacy' | 'modern';
+
+export const ERAS: Era[] = ['legacy', 'modern'];
+
 /** Build a server for `state` and connect a Client to it in-process. */
 export async function connect(
-  state: McpState = defaultState
+  state: McpState = defaultState,
+  era: Era = 'legacy'
 ): Promise<Connected> {
+  return era === 'modern' ? connectModern(state) : connectLegacy(state);
+}
+
+async function connectLegacy(state: McpState): Promise<Connected> {
   const server = await buildServer(state);
   const client = new Client({ name: 'runbook-test-client', version: '0.0.0' });
   const [clientTransport, serverTransport] =
@@ -90,6 +106,27 @@ export async function connect(
     close: async () => {
       await client.close();
       await server.close();
+    }
+  };
+}
+
+// InMemoryTransport only speaks the 2025 era, so the modern era goes through
+// createMcpHandler's fetch function. The URL is never dialed.
+async function connectModern(state: McpState): Promise<Connected> {
+  const handler = createMcpHandler(() => buildServer(state));
+  const client = new Client(
+    { name: 'runbook-test-client', version: '0.0.0' },
+    { versionNegotiation: { mode: { pin: '2026-07-28' } } }
+  );
+  const transport = new StreamableHTTPClientTransport(
+    new URL('http://runbook.test/mcp'),
+    { fetch: (url, init) => handler.fetch(new Request(url, init)) }
+  );
+  await client.connect(transport);
+  return {
+    client,
+    close: async () => {
+      await client.close();
     }
   };
 }
