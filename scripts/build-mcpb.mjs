@@ -49,6 +49,9 @@ async function buildMcpb() {
     'manifest.json',
     'package.json',
     'pnpm-lock.yaml',
+    // Makes temp-build its own workspace root; otherwise pnpm treats it as
+    // part of the repo workspace and tries to purge the repo's node_modules
+    'pnpm-workspace.yaml',
     'icon.png',
     'README.md',
     'LICENSE'
