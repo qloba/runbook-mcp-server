@@ -90,8 +90,10 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
         properties: {
           scope: {
             type: 'string',
-            description:
-              'ID of the book or workspace. If provided, the result will be filtered by them.',
+            description: `ID of the book or workspace. If provided, the result will be filtered by them.
+- Book IDs start with \`bk_\`
+- Workspace IDs start with \`ws_\`
+- Workspace IDs can be obtained from the workspace URL (e.g. \`/workspaces/<WORKSPACE_ID>\`)`,
             default: 'all'
           },
           keywords: {
