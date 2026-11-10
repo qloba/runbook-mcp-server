@@ -1,4 +1,5 @@
 import { McpState } from '../state';
+import { workflowGuide } from '../guides/workflow';
 
 export const promptHandlers = function (state: McpState) {
   const withPrefix = function (str: string) {
@@ -41,6 +42,7 @@ This Runbook MCP server exposes these tools (the exact prefix may differ — e.g
 - \`${withPrefix('get-folder')}\` — fetch a folder in a book with its children (subfolders and articles).
 - \`${withPrefix('get-article')}\` — fetch full article body by \`ar_…\` UID or by URL
 - \`${withPrefix('create-article')}\` / \`${withPrefix('update-article')}\` — create/update articles in Markdown
+- \`${withPrefix('get-workflow-guide')}\` — guide for writing the steps and \`:::input\` form fields of a workflow book (call it before creating or updating articles in a workflow book)
 - \`${withPrefix('list-assigned-processes')}\` — list in-progress workflow runs assigned to the current user (returns \`rs_…\` run state UIDs and their books)
 - \`${withPrefix('get-process')}\` — read a workflow's current state and its \`:::input\` definitions (call this BEFORE \`run-process\`)
 - \`${withPrefix('run-process')}\` — start or continue a workflow run, passing \`propertyValues\`
@@ -151,6 +153,8 @@ A blunt "not found" is the last resort, not the first response.
 
 For updates, \`articleUid\` is required. Omitting \`bodyMarkdown\` leaves the body unchanged and only updates \`name\` / \`categoryUids\`.
 
+Before creating or updating an article in a **workflow** book, call \`${withPrefix('get-workflow-guide')}\` and follow it: each article is a step of the process, and form fields use the \`:::input\` syntax it describes.
+
 ## Workflow execution
 
 For any \`bookType: workflow\`, follow this order strictly. Don't call \`${withPrefix('run-process')}\` cold.
@@ -225,6 +229,18 @@ Report back to the user with: where you saved the file, how many books are in ea
 - Don't ask the user to confirm the book list before writing the skill. The list is what it is — write it down and move on.
 
 Begin now: call \`${withPrefix('list-books')}\` and proceed through the steps.`
+    },
+    [withPrefix('create-workflow')]: {
+      name: withPrefix('create-workflow'),
+      title: 'Runbook Workflow Authoring Guide',
+      description:
+        'Guide for writing the steps and input forms of a Runbook workflow book through the MCP tools',
+      arguments: [],
+      prompt: `# ${withPrefix('create-workflow')} prompt
+
+${workflowGuide(withPrefix)}
+
+Begin by asking the user which workflow book to work on and what process it should implement, unless they already told you.`
     }
   };
 };

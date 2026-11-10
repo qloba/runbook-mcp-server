@@ -42,6 +42,7 @@ import {
   CreateArticleMutationVariables
 } from '../types';
 import { McpState } from '../state';
+import { workflowGuide } from '../guides/workflow';
 import {
   CallToolResult,
   Tool,
@@ -68,6 +69,10 @@ Markdown format supports:
 - Blockquotes: > quoted text
 - Callouts: :::callout info\\ntext\\n::: or :::callout warning\\ntext\\n:::
 - Diagrams: \`\`\`mermaid\\ngraph TD;\\n\`\`\``;
+}
+
+function getWorkflowGuideNotice(withPrefix: (str: string) => string) {
+  return `If the book is a workflow book (\`bookType: workflow\`), call \`${withPrefix('get-workflow-guide')}\` first: each article is a step of the process, and form fields need the \`:::input\` syntax it describes.`;
 }
 
 export const toolHandlers = function (
@@ -289,7 +294,8 @@ You will need to retrieve the full content by calling \`${withPrefix('get-articl
       description: `Create a new article in a specified book with ID.
 The article body is in Markdown format. The article will be created in the root folder of the book.
 You can specify categories for the article by their IDs, which always start with 'ca_'
-You can retrieve a list of books with \`${withPrefix('list-books')}\` and categories with \`${withPrefix('list-categories')}\`.${getMarkdownDescription()}`,
+You can retrieve a list of books with \`${withPrefix('list-books')}\` and categories with \`${withPrefix('list-categories')}\`.
+${getWorkflowGuideNotice(withPrefix)}${getMarkdownDescription()}`,
       inputSchema: {
         type: 'object',
         properties: {
@@ -367,7 +373,8 @@ You can retrieve a list of books with \`${withPrefix('list-books')}\` and catego
     [withPrefix('update-article')]: {
       description: `Update an existing article by its ID.
 The article body is in Markdown format.
-You can specify categories for the article by their IDs, which always start with 'ca_'.${getMarkdownDescription()}`,
+You can specify categories for the article by their IDs, which always start with 'ca_'.
+${getWorkflowGuideNotice(withPrefix)}${getMarkdownDescription()}`,
       inputSchema: {
         type: 'object',
         properties: {
@@ -437,6 +444,33 @@ You can specify categories for the article by their IDs, which always start with
                 null,
                 2
               )
+            }
+          ]
+        };
+      }
+    },
+
+    [withPrefix('get-workflow-guide')]: {
+      description: `Get the guide for creating and editing the steps of a workflow book (\`bookType: workflow\`).
+It explains what an article is in a workflow, the \`:::input\` Markdown syntax that turns into form fields, how to change existing steps without breaking their field IDs, and which settings are left to a human.
+Call this before creating or updating any article in a workflow book with \`${withPrefix('create-article')}\` or \`${withPrefix('update-article')}\`.`,
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      annotations: {
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+        readOnlyHint: true,
+        title: 'Get Workflow Guide'
+      },
+      handler: async () => {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: workflowGuide(withPrefix)
             }
           ]
         };

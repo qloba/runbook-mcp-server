@@ -42,6 +42,9 @@ describe.each(ERAS)('%s era', (era: Era) => {
       expect(conn.client.getInstructions()).toContain(
         'https://test.runbook.jp'
       );
+      expect(conn.client.getInstructions()).toContain(
+        'call my-runbook-get-workflow-guide'
+      );
     });
 
     it('negotiates the protocol revision of the era', async () => {
@@ -70,11 +73,20 @@ describe.each(ERAS)('%s era', (era: Era) => {
 
       const { tools } = await conn.client.listTools();
 
-      expect(tools).toHaveLength(12);
+      expect(tools).toHaveLength(13);
       expect(tools.every((t) => t.name.startsWith('other-'))).toBe(true);
       // Cross references in descriptions follow the prefix too
       const search = tools.find((t) => t.name === 'other-search-articles');
       expect(search?.description).toContain('`other-get-article`');
+    });
+
+    it('points the article write tools to the workflow guide', async () => {
+      const { tools } = await conn.client.listTools();
+
+      for (const name of ['runbook-create-article', 'runbook-update-article']) {
+        const tool = tools.find((t) => t.name === name);
+        expect(tool?.description).toContain('`runbook-get-workflow-guide`');
+      }
     });
 
     it('marks only write tools as non read-only', async () => {
@@ -234,7 +246,7 @@ describe.each(ERAS)('%s era', (era: Era) => {
   });
 
   describe('prompts', () => {
-    it('lists the init prompt', async () => {
+    it('lists the prompts', async () => {
       const { prompts } = await conn.client.listPrompts();
 
       expect(prompts).toEqual([
@@ -244,8 +256,42 @@ describe.each(ERAS)('%s era', (era: Era) => {
           description:
             'Bootstrap a Runbook skill file with the current environment snapshot',
           arguments: []
+        },
+        {
+          name: 'runbook-create-workflow',
+          title: 'Runbook Workflow Authoring Guide',
+          description:
+            'Guide for writing the steps and input forms of a Runbook workflow book through the MCP tools',
+          arguments: []
         }
       ]);
+    });
+
+    it('returns the workflow authoring guide with prefixed tool names', async () => {
+      const { messages } = await conn.client.getPrompt({
+        name: 'runbook-create-workflow'
+      });
+
+      expect(messages).toHaveLength(1);
+      const text = (messages[0].content as { text: string }).text;
+      expect(text).toMatch(/^# runbook-create-workflow prompt/);
+      expect(text).toContain('`runbook-create-article`');
+      expect(text).toContain(':::input select { uid="new1" required=true }');
+    });
+
+    it('shares the guide with the get-workflow-guide tool', async () => {
+      const { messages } = await conn.client.getPrompt({
+        name: 'runbook-create-workflow'
+      });
+      const result = await callTool(
+        conn.client,
+        'runbook-get-workflow-guide',
+        {}
+      );
+
+      const guide = (result.content as { text: string }[])[0].text;
+      expect(guide).toMatch(/^You are going to build/);
+      expect((messages[0].content as { text: string }).text).toContain(guide);
     });
 
     it('returns the prompt as a user message with prefixed tool names', async () => {

@@ -34,6 +34,9 @@ This MCP server integrates with [Runbook](https://www.runbookapp.com/) to allow 
     - `name` (string): Name of the article to update.
     - `bodyMarkdown` (string): Body of the article in Markdown format. If not provided, the body will not be updated.
     - `categoryUids` (array): IDs of the categories to assign to the article. Each ID starts with 'ca_'. You can retrieve a list of categories with \`list-categories\`.
+- **`get-workflow-guide`**
+  - Get the guide for creating and editing the steps of a workflow book: what an article is in a workflow, the `:::input` syntax for form fields, and which settings are left to a human. The server instructions and the `create-article` / `update-article` descriptions tell the AI to call it before writing articles in a workflow book. The same guide is available as the `create-workflow` prompt.
+  - No inputs.
 - **`list-books`**
   - List top 100 books in the organization.
   - Optional inputs:
@@ -74,6 +77,13 @@ This MCP server integrates with [Runbook](https://www.runbookapp.com/) to allow 
   - Optional inputs:
     - `runStateUid` (string): ID of the run state. It always starts with 'rs_'. If not provided, a new process will be created.
     - `propertyValues` (object): Property values to pass to the process. This is an object whose keys are strings and values are string or string[]. Properties correspond to \`::::input\` elements in the article body. Only input elements with type="checkbox" can use string[] type.
+
+### Prompts
+
+- **`init`**
+  - Bootstrap a skill file (`SKILL.md`) that caches the books of the Runbook environment and the operational patterns for the tools.
+- **`create-workflow`**
+  - Guide the AI through writing the steps of a workflow book: what an article is in a workflow, how `:::input` blocks in the Markdown body become form fields, how to change existing steps without breaking their field IDs, and which settings (folders, conditional branching, assignees, workflow actions) are left to a human in the web UI.
 
 ## Requirements
 
