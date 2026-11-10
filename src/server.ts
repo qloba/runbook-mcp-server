@@ -51,6 +51,7 @@ This MCP server provides access to Runbook for document management and business 
 Always use Runbook MCP tools (e.g. runbook-create-article, runbook-update-article, runbook-list-articles) to interact with Runbook. Never attempt alternative approaches such as direct HTTP requests or curl commands instead of using these tools.
 This MCP server connects to the Runbook tenant: ${state.baseUrl}.
 When multiple Runbook MCP servers are configured, each connects to a different tenant. Always confirm which tenant the user intends to operate on before creating or updating content. If unclear, ask the user to specify the target tenant.
+Before creating or updating articles in a workflow book (bookType: workflow), call ${state.name}-get-workflow-guide and follow it. It explains how the steps of a workflow and their input forms are written.
 `
     }
   );

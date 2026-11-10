@@ -22,6 +22,7 @@ const EXPECTED_TOOLS = [
   'list-articles',
   'create-article',
   'update-article',
+  'get-workflow-guide',
   'list-books',
   'list-categories',
   'get-folder',
@@ -203,14 +204,18 @@ function checksFor(era) {
       }
     ],
     [
-      'prompts/list: exposes runbook-init',
+      'prompts/list: exposes runbook-init and runbook-create-workflow',
       async () => {
         const res = await run(['--method', 'prompts/list']);
         assertOk(res);
         const names = res.json.result.prompts.map(
           (/** @type {any} */ p) => p.name
         );
-        assert(names.includes('runbook-init'), `prompts: ${names.join(', ')}`);
+        assert(
+          names.includes('runbook-init') &&
+            names.includes('runbook-create-workflow'),
+          `prompts: ${names.join(', ')}`
+        );
       }
     ],
     [
